@@ -1,0 +1,4 @@
+# PDF 书签、目录页码与字体子集化所需的 Python 依赖（均为可选增强）
+pypdf>=5.0
+fonttools>=4.40
+brotli>=1.0

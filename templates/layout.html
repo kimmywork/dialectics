@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="{{lang}}" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<meta name="description" content="{{description}}">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="book">
+<meta property="og:site_name" content="{{book_title}}">
+<meta property="og:title" content="{{title}}">
+<meta property="og:description" content="{{description}}">
+{{font_preload}}
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/web.css">
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("dialectics.theme");
+    if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+  } catch (e) {}
+})();
+</script>
+</head>
+<body class="{{body_class}}">
+<a class="skip-link" href="#main">跳到正文</a>
+<div class="read-progress" aria-hidden="true"><span id="progress-bar"></span></div>
+
+<header class="topbar">
+  <button class="icon-btn menu-btn" id="menu-toggle" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">
+    <span class="icon-lines" aria-hidden="true"></span>
+  </button>
+  <a class="topbar-title" href="index.html">{{short_title}}</a>
+  <button class="icon-btn theme-btn" data-theme-toggle aria-label="切换主题">
+    <span class="theme-dot" aria-hidden="true"></span>
+  </button>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <a class="sidebar-brand" href="index.html">
+      <span class="sidebar-title">{{short_title}}</span>
+      <span class="sidebar-sub">{{subtitle}}</span>
+    </a>
+    <nav class="sidebar-nav" aria-label="全书目录">
+{{nav}}
+    </nav>
+    <div class="sidebar-foot">
+      <a href="{{pdf_href}}">下载 PDF</a>
+      <span class="dot" aria-hidden="true">·</span>
+      <a href="index.html#catalog">目录</a>
+      <button class="icon-btn theme-btn" data-theme-toggle aria-label="切换主题">
+        <span class="theme-dot" aria-hidden="true"></span>
+      </button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <main class="main" id="main">
+{{body}}
+    <footer class="page-foot">
+      <p>{{book_title}}</p>
+      <p>{{author}}{{year}}</p>
+    </footer>
+  </main>
+</div>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,496 @@
+/* ------------------------------------------------------------------ *
+ * 打印层：A4 书籍版式（封面 / 版权页 / 目录 / 部分扉页 / 正文）。
+ * 由 Chromium 的 print-to-pdf 输出，@page 背景与页眉页脚均可用。
+ * ------------------------------------------------------------------ */
+
+:root {
+  /* 打印时统一使用嵌入的衬线字体，保证中英文与页码都有字形 */
+  --sans: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
+}
+
+@page {
+  size: A4;
+  margin: 22mm 21mm 24mm;
+
+  @top-left {
+    content: "__BOOK_TITLE__";
+    font-family: "Noto Serif SC", serif;
+    font-size: 7.5pt;
+    letter-spacing: .22em;
+    color: #9a9184;
+    vertical-align: bottom;
+    padding-bottom: 3mm;
+  }
+  @top-right {
+    content: "__BOOK_SUBTITLE__";
+    font-family: "Noto Serif SC", serif;
+    font-size: 7.5pt;
+    letter-spacing: .14em;
+    color: #b3aa9c;
+    vertical-align: bottom;
+    padding-bottom: 3mm;
+  }
+  @bottom-center {
+    content: counter(page);
+    font-family: "Noto Serif SC", serif;
+    font-size: 8.5pt;
+    letter-spacing: .1em;
+    color: #9a9184;
+    vertical-align: top;
+    padding-top: 5mm;
+  }
+}
+
+@page cover {
+  margin: 0;
+  background: #f0e7d8;
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-center { content: none; }
+}
+
+@page front {
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-center { content: none; }
+}
+
+@page part {
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-center { content: none; }
+}
+
+html,
+body.print {
+  /* 不要给 body 铺白底：那只会覆盖正文区域，页面其余部分会露出透明/黑底。
+     纸张底色交给浏览器默认白纸与 @page 的 background。 */
+  background: transparent;
+  color: #221f1a;
+}
+
+body.print {
+  font-family: var(--serif);
+  font-size: 10.5pt;
+  line-height: 1.9;
+  text-rendering: geometricPrecision;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.print a {
+  color: inherit;
+  border: 0;
+  text-decoration: none;
+}
+
+.print .prose {
+  max-width: none;
+  font-size: 10.5pt;
+  line-height: 1.9;
+}
+
+/* ---------------- 封面 ---------------- */
+
+.pdf-cover {
+  page: cover;
+  /* 略小于页面高度，避免 297mm 的舍入误差把封面挤出一张空白页；
+     换页交给说明页的 break-before，避免两个分页规则叠加多出空白页 */
+  position: relative;
+  height: 296mm;
+  text-align: center;
+}
+
+.cover-frame {
+  /* 用 inset 定位而不是 height:100% + margin，否则外边距会让封面溢出到第二页 */
+  position: absolute;
+  inset: 13mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20mm;
+  border: .7pt solid rgba(156, 59, 36, .32);
+}
+
+.cover-kicker {
+  margin: 0 0 16mm;
+  font-size: 9pt;
+  letter-spacing: .55em;
+  text-indent: .55em;
+  color: #9c3b24;
+}
+
+.cover-title {
+  margin: 0;
+  font-size: 44pt;
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: .1em;
+  text-indent: .1em;
+  color: #241f18;
+}
+
+.cover-rule {
+  width: 20mm;
+  height: 1.4pt;
+  margin: 11mm auto 9mm;
+  background: #9c3b24;
+}
+
+.cover-subtitle {
+  margin: 0;
+  font-size: 15pt;
+  letter-spacing: .36em;
+  text-indent: .36em;
+  color: #5d5346;
+}
+
+.cover-author {
+  margin: 9mm 0 0;
+  font-size: 9pt;
+  letter-spacing: .22em;
+  color: #8c8477;
+}
+
+.cover-seal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 25mm;
+  height: 25mm;
+  margin-top: 30mm;
+  background: #9c3b24;
+  color: #f7efe2;
+  font-size: 16pt;
+  line-height: 1.06;
+  border-radius: .6mm;
+}
+
+.cover-foot {
+  position: absolute;
+  right: 0;
+  bottom: 14mm;
+  left: 0;
+  margin: 0;
+  font-size: 8.5pt;
+  letter-spacing: .24em;
+  text-indent: .24em;
+  color: #8c8477;
+}
+
+/* ---------------- 版权 / 说明页 ---------------- */
+
+.pdf-colophon {
+  page: front;
+  break-before: page;
+  padding-top: 32mm;
+  max-width: 140mm;
+}
+
+.pdf-colophon h2 {
+  margin: 0 0 9mm;
+  font-size: 16pt;
+  letter-spacing: .16em;
+}
+
+.pdf-colophon p {
+  margin: 0 0 4mm;
+  color: #4d463c;
+  text-indent: 2em;
+}
+
+.pdf-colophon dl {
+  margin: 14mm 0 0;
+  display: grid;
+  grid-template-columns: 20mm 1fr;
+  gap: 3mm 8mm;
+  font-size: 9.5pt;
+  line-height: 1.7;
+}
+
+.pdf-colophon dt { color: #8c8477; }
+.pdf-colophon dd { margin: 0; }
+
+.pdf-colophon .colophon-note {
+  margin-top: 22mm;
+  padding-top: 4mm;
+  border-top: .5pt solid #d9cfbf;
+  font-size: 8.5pt;
+  color: #8c8477;
+  text-indent: 0;
+}
+
+/* ---------------- 目录 ---------------- */
+
+.pdf-toc {
+  page: front;
+  break-before: page;
+}
+
+.pdf-toc h1 {
+  margin: 0 0 12mm;
+  font-size: 19pt;
+  letter-spacing: .34em;
+  text-indent: .34em;
+}
+
+.toc-part-head {
+  display: flex;
+  align-items: baseline;
+  gap: 5mm;
+  margin-top: 6.5mm;
+  padding-bottom: 1.6mm;
+  border-bottom: .7pt solid #c9bfae;
+  break-after: avoid;
+}
+
+.toc-part-head .toc-label {
+  flex: none;
+  width: 17mm;
+  font-size: 7.5pt;
+  letter-spacing: .16em;
+  color: #9c3b24;
+  white-space: nowrap;
+}
+
+.toc-part-head .toc-name {
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: #221f1a;
+}
+
+.toc-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5mm;
+  padding: 1.5mm 0;
+  border-bottom: .35pt dotted #ddd3c2;
+  font-size: 9.2pt;
+  line-height: 1.55;
+  color: #3d372e;
+  break-inside: avoid;
+}
+
+.toc-row .toc-label {
+  flex: none;
+  width: 17mm;
+  font-size: 7.3pt;
+  letter-spacing: .08em;
+  color: #8c8477;
+  white-space: nowrap;
+}
+
+.toc-row .toc-name { flex: 1; }
+
+.toc-solo { margin-top: 4mm; }
+
+/* ---------------- 部分扉页 ---------------- */
+
+.pdf-part {
+  page: part;
+  break-before: page;
+  break-inside: avoid;
+  padding-top: 58mm;
+}
+
+.part-label {
+  margin: 0 0 7mm;
+  font-size: 9pt;
+  letter-spacing: .42em;
+  text-indent: .42em;
+  color: #9c3b24;
+}
+
+.pdf-part .part-title {
+  margin: 0 0 12mm;
+  padding-bottom: 7mm;
+  border-bottom: 1.2pt solid #9c3b24;
+  font-size: 26pt;
+  line-height: 1.42;
+  letter-spacing: .02em;
+}
+
+.pdf-part .prose {
+  max-width: 150mm;
+  font-size: 9.8pt;
+  line-height: 1.85;
+  color: #4d463c;
+}
+
+.pdf-part .prose p { text-indent: 2em; }
+
+.pdf-part .part-chapters {
+  list-style: none;
+  margin: 14mm 0 0;
+  padding: 0;
+  border-top: .6pt solid #c9bfae;
+}
+
+.pdf-part .part-chapters li {
+  display: flex;
+  align-items: baseline;
+  gap: 6mm;
+  padding: 3.2mm 0;
+  border-bottom: .4pt solid #e3dacb;
+  font-size: 9.6pt;
+}
+
+.part-ch-num {
+  flex: none;
+  font-size: 8pt;
+  letter-spacing: .1em;
+  color: #9c3b24;
+}
+
+/* ---------------- 正文 ---------------- */
+
+.pdf-chapter {
+  break-before: page;
+}
+
+.pdf-chapter > .kicker {
+  margin: 0 0 4mm;
+  font-size: 8pt;
+  letter-spacing: .36em;
+  text-indent: .36em;
+  color: #9c3b24;
+}
+
+.chapter-title {
+  margin: 0 0 10mm;
+  padding-bottom: 5mm;
+  border-bottom: 1pt solid #9c3b24;
+  font-size: 20pt;
+  line-height: 1.48;
+  letter-spacing: .01em;
+  break-after: avoid;
+}
+
+.print .prose p {
+  margin: 0 0 .22em;
+  text-indent: 2em;
+  orphans: 3;
+  widows: 3;
+}
+
+.print .prose blockquote p,
+.print .prose li p,
+.print .prose td p,
+.print .prose th p,
+.print .prose .math p {
+  text-indent: 0;
+}
+
+.print .prose h3 {
+  margin: 8mm 0 3.2mm;
+  padding-left: 3mm;
+  border-left: 2.6pt solid #9c3b24;
+  font-size: 14pt;
+  line-height: 1.55;
+  break-after: avoid;
+}
+
+.print .prose h4 {
+  margin: 5.5mm 0 2mm;
+  font-size: 11.5pt;
+  line-height: 1.6;
+  break-after: avoid;
+}
+
+.print .prose h5 {
+  margin: 4mm 0 1.5mm;
+  font-size: 10.5pt;
+  color: #4d463c;
+  break-after: avoid;
+}
+
+.print .prose h4::before {
+  width: .32em;
+  height: .32em;
+  margin-right: .5em;
+}
+
+.print .prose blockquote {
+  margin: 5mm 0;
+  padding: 3.6mm 5mm;
+  background: #f7f1e6;
+  border-left: 2.6pt solid #9c3b24;
+  border-radius: 0;
+  break-inside: auto;
+}
+
+.print .prose blockquote p {
+  margin: 0 0 2mm;
+  font-size: 9.9pt;
+  line-height: 1.8;
+}
+.print .prose blockquote p:last-child { margin-bottom: 0; }
+
+.print .prose ul,
+.print .prose ol {
+  margin: 0 0 3mm;
+  padding-left: 6mm;
+}
+
+.print .prose li { margin: 1mm 0; }
+
+.print .prose hr {
+  margin: 5mm 0;
+  height: auto;
+}
+.print .prose hr::before {
+  font-size: 8pt;
+  letter-spacing: .6em;
+  text-indent: .6em;
+  color: #b3a48f;
+}
+
+/* 表格 */
+
+.print .table-wrap {
+  margin: 5mm 0;
+  overflow: visible;
+}
+
+.print .prose table {
+  width: 100%;
+  font-size: 8pt;
+  line-height: 1.55;
+  table-layout: auto;
+}
+
+.print .prose th,
+.print .prose td {
+  padding: 1.6mm 2mm;
+  border-bottom: .4pt solid #d9cfbf;
+  word-break: break-word;
+}
+
+.print .prose thead th {
+  background: #f4ede0;
+  border-bottom: .7pt solid #b3a48f;
+}
+
+.print .prose thead { display: table-header-group; }
+.print .prose tr { break-inside: avoid; }
+
+/* 数学公式 */
+
+.print math { font-size: 10pt; }
+
+.print div.math,
+.print math[display="block"] {
+  margin: 3mm 0;
+  overflow: visible;
+}
+
+.print .prose code {
+  background: #f4ede0;
+  font-size: .9em;
+}
+
+/* 页脚链接不做装饰 */
+.print .footnotes { font-size: 8.5pt; }

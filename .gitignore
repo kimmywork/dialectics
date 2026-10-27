@@ -1,0 +1,19 @@
+# 构建缓存（页面与 PDF 都输出到 docs/，需要提交）
+build/
+.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 系统 / 编辑器
+.DS_Store
+._*
+.idea/
+.vscode/
+*.log
+
+# 字体源文件（体积大；子集化后的 docs/assets/fonts/*.woff2 需要提交）
+docs/assets/fonts/src/
