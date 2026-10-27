@@ -740,6 +740,8 @@ def build_epub(book: Book, cfg: dict, pandoc: str, cover: Path | None, target: P
     text = source.read_text(encoding="utf-8").replace(
         "[进阶深潜]", '<span class="tag-advanced">进阶深潜</span>'
     )
+    # EPUB 是 XHTML，原始 HTML 里的 <br> 必须写成自闭合，否则 Books 会报标签未闭合
+    text = re.sub(r"<br\s*/?>", "<br />", text, flags=re.I)
     BUILD.mkdir(exist_ok=True)
     staging = BUILD / "epub.md"
     staging.write_text(text, encoding="utf-8")
