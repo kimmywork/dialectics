@@ -94,6 +94,19 @@
     });
   }
 
+  /* ---------------- 目录滚动位置 ---------------- */
+  /* 换页后保持侧栏原来的滚动位置，不跳动。 */
+  var nav = document.querySelector(".sidebar-nav");
+  if (nav) {
+    try {
+      var savedNav = sessionStorage.getItem("dialectics.nav");
+      if (savedNav !== null) nav.scrollTop = parseInt(savedNav, 10) || 0;
+    } catch (e) { /* 隐私模式忽略 */ }
+    nav.addEventListener("scroll", function () {
+      try { sessionStorage.setItem("dialectics.nav", String(nav.scrollTop)); } catch (e) {}
+    }, { passive: true });
+  }
+
   /* ---------------- 阅读进度 ---------------- */
 
   var bar = document.getElementById("progress-bar");

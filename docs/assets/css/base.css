@@ -312,6 +312,61 @@ div.math {
   color: var(--accent);
 }
 
+/* 入门星标与 [进阶深潜] 徽标 */
+
+.star {
+  color: var(--accent);
+  font-size: .82em;
+  margin-right: .08em;
+}
+
+.nav-star {
+  flex: none;
+  align-self: flex-start;
+  margin-left: .4em;
+  padding-top: .3em;
+  color: var(--accent);
+  font-size: .72rem;
+}
+
+.catalog-star {
+  flex: none;
+  margin-left: .6em;
+  padding-top: .35em;
+  color: var(--accent);
+  font-size: .8em;
+}
+
+.toc-star {
+  color: var(--accent);
+  margin-right: .45em;
+}
+
+.tag-advanced {
+  display: inline-block;
+  margin-left: .35em;
+  padding: .1em .55em;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: .6em;
+  font-weight: 500;
+  letter-spacing: .08em;
+  color: var(--accent);
+  vertical-align: .18em;
+  white-space: nowrap;
+}
+
+.hero-license {
+  margin: 1.1rem 0 0;
+  font-family: var(--sans);
+  font-size: .76rem;
+  letter-spacing: .04em;
+  color: var(--ink-faint);
+}
+.hero-license a { color: var(--ink-soft); }
+.hero-license a:hover { color: var(--accent); }
+
 .dot { margin: 0 .5em; color: var(--ink-faint); }
 
 @media (prefers-reduced-motion: reduce) {

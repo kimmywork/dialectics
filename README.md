@@ -3,7 +3,8 @@
 一份 Markdown 原稿，两条发布通道：
 
 - **Web** —— 分章阅读的静态站点，带目录侧栏、深浅色、阅读进度和续读。
-- **PDF** —— A4 书籍版式，含封面、说明页、目录、部分扉页、页眉页码，以及阅读器侧边栏书签。
+- **PDF** —— A4 书籍版式，含封面、说明页、目录、部分扉页、页眉页码，以及三层阅读器书签。
+- **EPUB** —— 带封面与完整目录的电子书，适配 Kindle / Apple Books / 微信读书等阅读器。
 
 正文只有 `docs/dialectics.md` 一个源文件，构建时自动按一级/二级标题拆成「部分」和「章节」。构建产物直接写回 `docs/`，提交后用 GitHub Pages 发布即可，不需要在云端构建。
 
@@ -14,8 +15,9 @@
 # 建议：pip install -r requirements.txt
 #       —— pypdf 生成 PDF 侧边栏书签；fonttools + brotli 生成字体子集
 
-make            # 构建 docs/ 下的全部页面和 PDF
+make            # 构建网页、PDF 与 EPUB
 make web        # 只构建网页
+make epub       # 构建网页 + EPUB（跳过 PDF）
 make serve      # 本地预览 http://localhost:8000
 make clean      # 只清理生成文件，保留源文件与 assets
 ```
@@ -27,6 +29,7 @@ make clean      # 只清理生成文件，保留源文件与 assets
 | `docs/index.html` | 封面与目录首页 |
 | `docs/ch01.html` … | 各章节页面（`part-*.html` 为部分扉页） |
 | `docs/dialectics.pdf` | 可下载的 PDF |
+| `docs/dialectics.epub` | 可下载的 EPUB |
 | `docs/assets/` | 样式、脚本、字体（源文件，直接发布） |
 | `docs/dialectics.md` | 正文源文件 |
 
@@ -42,6 +45,7 @@ templates/print.html      PDF 外壳
 docs/assets/css/base.css  共用排版与配色变量
 docs/assets/css/web.css   三栏阅读器布局
 docs/assets/css/print.css A4 分页、页眉页码、封面与扉页
+docs/assets/css/epub.css  EPUB 阅读样式
 docs/assets/js/app.js     主题、抽屉目录、进度条、续读、键盘翻页
 docs/assets/fonts/        子集化后的 Noto Serif SC（随仓库提交）
 docs/dialectics.md        正文源文件
@@ -81,6 +85,7 @@ docs/dialectics.md        正文源文件
 
 - **pandoc** 负责 Markdown → HTML，数学公式输出为 **MathML**，网页和 PDF 都不依赖 MathJax/KaTeX 运行时。
 - **Chromium** 的 print-to-pdf 负责 PDF：CSS `@page` 命名页 + 边距框实现封面底色、部分扉页不显示页码、正文页眉与页码。
-- **pypdf** 在打印完成后补写阅读器侧边栏的嵌套书签（部分 → 章节）。印在书页里的目录保持干净，不排页码。
-- **构建顺序**：解析 → 渲染 → 统计用字 → 子集字体 → 写出页面 → 生成打印页 → 打印 PDF → 写入书签。
+- **pypdf** 在打印完成后补写阅读器侧边栏的嵌套书签（部分 → 章节 → 小节）。印在书页里的目录保持干净，不排页码。
+- **EPUB** 由 pandoc 直接输出，自动生成封面 PNG、可点击目录与 MathML 公式。
+- **构建顺序**：解析 → 渲染 → 统计用字 → 子集字体 → 写出页面 → 生成打印页 → 打印 PDF → 写入书签 → 打包 EPUB。
 - 站点无第三方 JS/CSS 依赖，离线可读（字体随站点分发）。

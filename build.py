@@ -82,6 +82,18 @@ def pandoc_md_to_html(exe: str, markdown: str) -> str:
 
 def tidy(fragment: str) -> str:
     """收拾 pandoc 输出：去掉标题前后的分隔线，给宽表格加滚动容器。"""
+    # 标题里的 [进阶深潜] 是分级标签，渲染成小徽标；正文里用反引号说明的
+    # `[进阶深潜]` 保持原样，避免把代码样式包进徽标里
+    def _tag(match: re.Match[str]) -> str:
+        inner = match.group(2).replace(
+            "[进阶深潜]", '<span class="tag-advanced">进阶深潜</span>'
+        )
+        inner = re.sub(r"^★\s*", '<span class="star">★</span> ', inner)
+        return match.group(1) + inner + match.group(3)
+
+    fragment = re.sub(
+        r"(<h[1-6][^>]*>)(.*?)(</h[1-6]>)", _tag, fragment, flags=re.S
+    )
     fragment = re.sub(r"<hr\s*/?>\s*(?=<h[1-6])", "", fragment)
     fragment = re.sub(r"(</h[1-6]>)\s*<hr\s*/?>", r"\1", fragment)
     fragment = re.sub(r"^(?:\s*<hr\s*/?>\s*)+", "", fragment)
@@ -119,6 +131,8 @@ class Chapter:
     body: str = ""
     label: str = ""
     name: str = ""
+    starred: bool = False
+    sections: list[tuple[str, str]] = field(default_factory=list)  # (锚点, 三级标题)
 
     @property
     def kicker(self) -> str:
@@ -169,7 +183,7 @@ class Book:
     def stats(self) -> str:
         numbered = sum(1 for p in self.parts if p.label.startswith("第"))
         chaps = sum(1 for c in self.chapters if c.title.startswith("第"))
-        chars = len(re.sub(r"\s", "", re.sub(r"[#>*`|\-]", "", self.meta["source_text"])))
+        chars = len(re.findall(r"[\u4e00-\u9fff]", self.meta["source_text"]))
         return f"{numbered} 个部分 · {chaps} 章 · 约 {chars / 10000:.0f} 万字"
 
 
@@ -180,11 +194,14 @@ def split_label(title: str) -> tuple[str, str]:
     match = re.match(r"^((?:第\s*\d+\s*章)|(?:第[一二三四五六七八九十]+部分)|"
                      r"(?:附录\s*[A-Za-z])|序章|结语|前言|后记)\s*(.*)$", title)
     if match:
-        return match.group(1).strip(), match.group(2).strip()
+        name = re.sub(r"^[：:、，,\s]+", "", match.group(2).strip())
+        return match.group(1).strip(), name
     return "", title
 
 
 def slugify_chapter(title: str, index: int) -> str:
+    if title.startswith("前言"):
+        return "preface"
     if title.startswith("序章"):
         return "prologue"
     if title.startswith("结语"):
@@ -231,22 +248,25 @@ def parse_book(path: Path) -> Book:
 
     for seg in segments:
         body = "\n".join(seg["lines"]).strip()
+        # 「★」是入门核心章节的标记，不参与标题解析，单独记为星标
+        starred = bool(re.match(r"^★\s*", seg["title"]))
+        raw_title = re.sub(r"^★\s*", "", seg["title"])
         if seg["level"] == 1:
             part_index += 1
-            label, name = split_label(seg["title"])
+            label, name = split_label(raw_title)
             current = Part(
-                title=seg["title"], intro_md=body,
-                slug=slugify_part(seg["title"], part_index),
-                label=label or seg["title"], name=name,
+                title=raw_title, intro_md=body,
+                slug=slugify_part(raw_title, part_index),
+                label=label or raw_title, name=name,
             )
             parts.append(current)
         else:
             chapter_index += 1
-            label, name = split_label(seg["title"])
+            label, name = split_label(raw_title)
             chapter = Chapter(
-                title=seg["title"], body_md=body,
-                slug=slugify_chapter(seg["title"], chapter_index),
-                label=label, name=name,
+                title=raw_title, body_md=body,
+                slug=slugify_chapter(raw_title, chapter_index),
+                label=label, name=name, starred=starred,
             )
             if current is not None:
                 chapter.part = current
@@ -273,9 +293,11 @@ def nav_html(book: Book, current: str) -> str:
         active = " is-active" if current == ch.slug else ""
         aria = ' aria-current="page"' if current == ch.slug else ""
         num = ch.label or ""
-        return (f'<li><a class="nav-item{active}" href="{ch.page}"{aria}>'
+        star = '<span class="nav-star" title="入门核心必读">★</span>' if ch.starred else ""
+        return (f'<li><a class="nav-item{active}" href="{ch.page}"{aria} '
+                f'title="{esc(ch.title)}">'
                 f'<span class="nav-num">{esc(num)}</span>'
-                f'<span class="nav-name">{esc(ch.name or ch.title)}</span></a></li>')
+                f'<span class="nav-name">{esc(ch.name or ch.title)}</span>{star}</a></li>')
 
     for ch in book.loose:
         rows.append(f'<div class="nav-solo"><ol class="nav-list">{chapter_row(ch)}</ol></div>')
@@ -326,9 +348,10 @@ def part_page_html(part: Part) -> str:
     intro = f'<div class="prose part-intro">{part.intro}</div>' if part.intro else ""
     items = []
     for n, ch in enumerate(part.chapters, 1):
+        star = '<span class="star" title="入门核心必读">★</span>' if ch.starred else ""
         items.append(
             f'<li><a href="{ch.page}"><span class="part-ch-num">{n:02d}</span>'
-            f'<span class="part-ch-title">{esc(ch.title)}</span>'
+            f'<span class="part-ch-title">{esc(ch.title)}{star}</span>'
             f'<span class="part-ch-arrow">→</span></a></li>'
         )
     listing = ('<ol class="part-chapters">' + "".join(items) + "</ol>") if items else ""
@@ -337,9 +360,21 @@ def part_page_html(part: Part) -> str:
 
 def chapter_page_html(ch: Chapter) -> str:
     kicker = f'<p class="kicker">{esc(ch.kicker)}</p>' if ch.kicker else ""
+    star = '<span class="star" title="入门核心必读">★</span> ' if ch.starred else ""
     return (f'<article class="chapter">{kicker}'
-            f'<header class="chapter-head"><h1>{esc(ch.title)}</h1></header>'
+            f'<header class="chapter-head"><h1>{star}{esc(ch.title)}</h1></header>'
             f'<div class="prose">{ch.body}</div></article>')
+
+
+def extract_sections(fragment: str) -> list[tuple[str, str]]:
+    """取出一章里的三级标题，用于 PDF 书签的第二层。"""
+    out: list[tuple[str, str]] = []
+    for match in re.finditer(r'<h3 id="([^"]+)"[^>]*>(.*?)</h3>', fragment, flags=re.S):
+        inner = re.sub(r'<span class="star"[^>]*>.*?</span>', "", match.group(2))
+        title = plain_text(inner)
+        if title:
+            out.append((match.group(1), title))
+    return out
 
 
 def chapter_description(ch: Chapter) -> str:
@@ -348,17 +383,23 @@ def chapter_description(ch: Chapter) -> str:
 
 
 def catalog_html(book: Book) -> str:
+    def title(ch: Chapter) -> str:
+        return esc(ch.name or ch.title)
+
+    def star(ch: Chapter) -> str:
+        return '<span class="catalog-star" title="入门核心必读">★</span>' if ch.starred else ""
+
     blocks = []
     for ch in book.loose:
         blocks.append(
             f'<div class="catalog-solo"><a href="{ch.page}">'
             f'<span class="catalog-label">{esc(ch.label)}</span>'
-            f'<span class="catalog-title">{esc(ch.name or ch.title)}</span></a></div>'
+            f'<span class="catalog-title">{title(ch)}</span>{star(ch)}</a></div>'
         )
     for part in book.parts:
         entries = "".join(
             f'<li><a href="{ch.page}"><span class="catalog-num">{esc(ch.label)}</span>'
-            f'<span class="catalog-title">{esc(ch.name or ch.title)}</span></a></li>'
+            f'<span class="catalog-title">{title(ch)}</span>{star(ch)}</a></li>'
             for ch in part.chapters
         )
         blocks.append(
@@ -382,7 +423,13 @@ def build_site(book: Book, cfg: dict, pandoc: str, fonts: dict[int, Path]) -> di
     description = meta["description"]
     lang = meta["language"]
     pdf_name = cfg["site"]["pdf_name"]
+    epub_name = cfg["site"].get("epub_name", "dialectics.epub")
     author = meta.get("author", "").strip()
+    license_name = meta.get("license", "")
+    license_url = meta.get("license_url", "")
+    license_note = meta.get("license_note", "")
+    repo_url = meta.get("repo", "")
+    site_url = cfg["site"].get("url", "")
 
     font_preload = ""
     if fonts.get(400):
@@ -403,8 +450,14 @@ def build_site(book: Book, cfg: dict, pandoc: str, fonts: dict[int, Path]) -> di
             body=body,
             body_class=f"page-{cls}" if cls else "page-chapter",
             pdf_href=pdf_name,
+            epub_href=epub_name,
             author=f"{esc(author)} · " if author else "",
             year=str(datetime.now().year),
+            license=esc(license_name),
+            license_url=license_url,
+            license_note=esc(license_note),
+            repo_url=repo_url,
+            site_url=site_url,
         )
 
     pages: dict[str, str] = {}
@@ -424,9 +477,11 @@ def build_site(book: Book, cfg: dict, pandoc: str, fonts: dict[int, Path]) -> di
       <div class="hero-actions">
         <a class="btn btn-primary" href="{first_href}">开始阅读</a>
         <a class="btn" href="#catalog">目录</a>
-        <a class="btn btn-ghost" href="{pdf_name}">下载 PDF</a>
+        <a class="btn btn-ghost" href="{pdf_name}">PDF</a>
+        <a class="btn btn-ghost" href="{epub_name}">ePub</a>
       </div>
       <p class="hero-meta">{esc(book.stats())}</p>
+      <p class="hero-license"><a href="{license_url}">{esc(license_name)}</a> · {license_note}</p>
       <a class="resume" id="resume" href="#" hidden><span class="resume-label">继续上次阅读</span><span class="resume-title" id="resume-title"></span></a>
     </div>
   </section>
@@ -435,8 +490,8 @@ def build_site(book: Book, cfg: dict, pandoc: str, fonts: dict[int, Path]) -> di
     {catalog_html(book)}
   </section>
   <footer class="home-foot">
-    <p>Markdown 原文 · pandoc 渲染 · Chromium 排版</p>
-    <p>字体 Noto Serif SC · {esc(author) + " · " if author else ""}{datetime.now().year}</p>
+    <p>{esc(author)} · <a href="{license_url}">{esc(license_name)}</a> · <a href="{repo_url}">GitHub 源码</a></p>
+    <p>Markdown 原文 · pandoc 渲染 · Chromium 排版 · 字体 Noto Serif SC · {datetime.now().year}</p>
   </footer>
 </article>"""
     pages["index.html"] = page("", home, slug="index", cls="home")
@@ -468,38 +523,47 @@ def print_cover(meta: dict) -> str:
 </section>"""
 
 
-def print_colophon(meta: dict) -> str:
+def print_colophon(meta: dict, cfg: dict) -> str:
     author = meta.get("author", "").strip()
-    author_line = f"<dd>{esc(author)}</dd>" if author else ""
+    license_name = meta.get("license", "")
+    license_note = meta.get("license_note", "")
     today = datetime.now()
+    rows = [("书名", esc(meta["full_title"]))]
+    if author:
+        rows.append(("作者", f'{esc(author)} · <a href="{meta.get("homepage", "")}">{esc(meta.get("homepage", ""))}</a>'))
+    rows += [
+        ("版本", f"{today.year} 年 {today.month} 月"),
+        ("在线版", f'<a href="{esc(cfg["site"].get("url", ""))}">{esc(cfg["site"].get("url", ""))}</a>'),
+        ("源码", f'<a href="{esc(meta.get("repo", ""))}">{esc(meta.get("repo", ""))}</a>'),
+        ("许可", f'<a href="{esc(meta.get("license_url", ""))}">{esc(license_name)}</a>'
+                + (f"（{esc(license_note)}）" if license_note else "")),
+        ("排版", "Markdown → pandoc → Chromium 打印引擎"),
+        ("字体", "Noto Serif SC"),
+    ]
+    dl = "".join(f"<dt>{label}</dt><dd>{value}</dd>" for label, value in rows)
     return f"""<section class="pdf-colophon" id="colophon">
   <h2>本书说明</h2>
   <p>{esc(meta["description"])}</p>
-  <dl>
-    <dt>书名</dt><dd>{esc(meta["full_title"])}</dd>
-    {author_line}
-    <dt>版本</dt><dd>{today.year} 年 {today.month} 月</dd>
-    <dt>排版</dt><dd>Markdown → pandoc → Chromium 打印引擎</dd>
-    <dt>字体</dt><dd>Noto Serif SC</dd>
-  </dl>
+  <dl>{dl}</dl>
   <p class="colophon-note">本书为《{esc(meta["full_title"])}》的排版版本，正文内容以 Markdown 源文件为准。</p>
 </section>"""
 
 
 def print_toc(book: Book) -> str:
-    def row(slug: str, label: str, name: str, extra: str = "") -> str:
-        return (f'<a class="toc-row{extra}" href="#{slug}">'
-                f'<span class="toc-label">{esc(label)}</span>'
-                f'<span class="toc-name">{esc(name)}</span></a>')
+    def row(ch: Chapter, extra: str = "") -> str:
+        star = '<span class="toc-star">★</span>' if ch.starred else ""
+        return (f'<a class="toc-row{extra}" href="#{ch.slug}">'
+                f'<span class="toc-label">{esc(ch.label)}</span>'
+                f'<span class="toc-name">{esc(ch.name or ch.title)}</span>{star}</a>')
 
-    rows = [row(ch.slug, ch.label, ch.name or ch.title, " toc-solo") for ch in book.loose]
+    rows = [row(ch, " toc-solo") for ch in book.loose]
     for part in book.parts:
         rows.append(
             f'<a class="toc-part-head" href="#{part.slug}">'
             f'<span class="toc-label">{esc(part.label)}</span>'
             f'<span class="toc-name">{esc(part.name)}</span></a>'
         )
-        rows.extend(row(ch.slug, ch.label, ch.name or ch.title) for ch in part.chapters)
+        rows.extend(row(ch) for ch in part.chapters)
     return f'<section class="pdf-toc" id="toc"><h1>目录</h1>{"".join(rows)}</section>'
 
 
@@ -509,10 +573,20 @@ def outline_entries(book: Book) -> list[tuple[str, str, str | None]]:
         ("cover", "封面", None),
         ("toc", "目录", None),
     ]
-    entries.extend((ch.slug, ch.title, None) for ch in book.loose)
+    def label(ch: Chapter) -> str:
+        return f"★ {ch.title}" if ch.starred else ch.title
+
+    def add(ch: Chapter, parent: str | None) -> None:
+        entries.append((ch.slug, label(ch), parent))
+        for index, (_anchor, title) in enumerate(ch.sections):
+            entries.append((f"{ch.slug}-s{index}", title, ch.slug))
+
+    for ch in book.loose:
+        add(ch, None)
     for part in book.parts:
         entries.append((part.slug, f"{part.label} {part.name}".strip(), None))
-        entries.extend((ch.slug, ch.title, part.slug) for ch in part.chapters)
+        for ch in part.chapters:
+            add(ch, part.slug)
     return entries
 
 
@@ -527,8 +601,9 @@ def load_pdf_toc():
 
 def print_chapter(ch: Chapter) -> str:
     kicker = f'<p class="kicker">{esc(ch.kicker)}</p>' if ch.kicker else ""
+    star = '<span class="star">★</span> ' if ch.starred else ""
     return (f'<section class="pdf-chapter" id="{ch.slug}">{kicker}'
-            f'<h1 class="chapter-title">{esc(ch.title)}</h1>'
+            f'<h1 class="chapter-title">{star}{esc(ch.title)}</h1>'
             f'<div class="prose">{ch.body}</div></section>')
 
 
@@ -564,7 +639,7 @@ def build_print(book: Book, cfg: dict, fonts: dict[int, Path]) -> Path:
         css = re.sub(r"@font-face\s*\{[^}]*\}", "", css)
 
     # 阅读顺序：封面 → 版权说明 → 目录 → 无归属章节 → 每个部分（部分页 + 各章）
-    sections: list[str] = [print_cover(meta), print_colophon(meta), print_toc(book)]
+    sections: list[str] = [print_cover(meta), print_colophon(meta, cfg), print_toc(book)]
     sections.extend(print_chapter(ch) for ch in book.loose)
     for part in book.parts:
         sections.append(print_part(part))
@@ -601,6 +676,96 @@ def find_chrome() -> str | None:
         if exe := shutil.which(name):
             return exe
     return None
+
+
+def build_cover_image(meta: dict, out: Path) -> Path | None:
+    """把封面渲染成 1200×1800 的 PNG，供 EPUB 使用。"""
+    chrome = find_chrome()
+    if not chrome:
+        return None
+
+    font = ASSETS / "fonts" / "noto-serif-sc-400.woff2"
+    font_face = (
+        f'@font-face{{font-family:"Noto Serif SC";'
+        f'src:url("file://{font.resolve()}") format("woff2");font-weight:400}}'
+        if font.exists() else ""
+    )
+    author = meta.get("author", "").strip()
+    author_html = f'<p class="author">{esc(author)}</p>' if author else ""
+    document = f"""<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>
+{font_face}
+html,body{{margin:0;width:1200px;height:1800px;background:#f0e7d8;
+  font-family:"Noto Serif SC","Songti SC",serif;color:#241f18}}
+.frame{{position:absolute;inset:72px;border:1px solid rgba(156,59,36,.32);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}}
+.kicker{{font-size:26px;letter-spacing:.52em;text-indent:.52em;color:#9c3b24;margin:0 0 56px}}
+h1{{font-size:106px;letter-spacing:.1em;text-indent:.1em;margin:0;line-height:1.18}}
+.rule{{width:66px;height:4px;background:#9c3b24;margin:36px 0 30px}}
+.sub{{font-size:38px;letter-spacing:.34em;text-indent:.34em;color:#5d5346;margin:0}}
+.author{{font-size:26px;letter-spacing:.2em;color:#8c8477;margin:28px 0 0}}
+.seal{{width:152px;height:152px;border-radius:4px;background:#9c3b24;color:#f7efe2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:34px;line-height:1.1;margin-top:86px}}
+.foot{{position:absolute;left:0;right:0;bottom:58px;font-size:24px;
+  letter-spacing:.2em;text-indent:.2em;color:#8c8477;margin:0}}
+</style></head><body><div class="frame">
+  <p class="kicker">辩证思维手册</p>
+  <h1>{esc(meta["title"])}</h1>
+  <div class="rule"></div>
+  <p class="sub">{esc(meta["subtitle"])}</p>
+  {author_html}
+  <div class="seal"><span>辩</span><span>证</span></div>
+  <p class="foot">走出非黑即白 · 看清问题的结构</p>
+</div></body></html>"""
+
+    BUILD.mkdir(exist_ok=True)
+    page = BUILD / "cover.html"
+    page.write_text(document, encoding="utf-8")
+    with tempfile.TemporaryDirectory(prefix="cover-profile-") as profile:
+        subprocess.run(
+            [chrome, "--headless", "--disable-gpu", "--hide-scrollbars",
+             "--allow-file-access-from-files",
+             "--force-device-scale-factor=1", "--window-size=1200,1800",
+             f"--user-data-dir={profile}",
+             f"--screenshot={out.resolve()}", page.resolve().as_uri()],
+            capture_output=True, text=True,
+        )
+    return out if out.is_file() and out.stat().st_size > 10_000 else None
+
+
+def build_epub(book: Book, cfg: dict, pandoc: str, cover: Path | None, target: Path) -> None:
+    meta = cfg["book"]
+    source = ROOT / meta["source"]
+    # 源码里保留 [进阶深潜] 字面标签，EPUB 里换成小徽标
+    text = source.read_text(encoding="utf-8").replace(
+        "[进阶深潜]", '<span class="tag-advanced">进阶深潜</span>'
+    )
+    BUILD.mkdir(exist_ok=True)
+    staging = BUILD / "epub.md"
+    staging.write_text(text, encoding="utf-8")
+
+    cmd = [
+        pandoc,
+        "--from=markdown+smart+lists_without_preceding_blankline",
+        "--to=epub3",
+        "--mathml",
+        "--toc", "--toc-depth=2", "--split-level=1",
+        "--metadata", f"title={meta['full_title']}",
+        "--metadata", f"author={meta['author']}",
+        "--metadata", f"lang={meta['language']}",
+        "--metadata", f"description={meta['description']}",
+        "--metadata", f"rights={meta['license']}（{meta['license_note']}）",
+        "--metadata", f"date={datetime.now():%Y-%m}",
+        "--metadata", f"source={cfg['site'].get('url', '')}",
+        "--css", str(ASSETS / "css" / "epub.css"),
+    ]
+    if cover:
+        cmd += ["--epub-cover-image", str(cover)]
+    cmd += ["--output", str(target), str(staging)]
+
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    if proc.returncode != 0 or not target.is_file():
+        die(f"EPUB 生成失败：{proc.stderr.strip()[:400]}")
 
 
 def build_pdf(print_html: Path, target: Path) -> None:
@@ -658,6 +823,7 @@ def prepare_fonts(cfg: dict, html_text: str) -> dict[int, Path]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--no-pdf", action="store_true", help="只构建网页")
+    parser.add_argument("--no-epub", action="store_true", help="跳过 EPUB")
     parser.add_argument("--no-fonts", action="store_true", help="跳过字体子集化")
     parser.add_argument("--clean", action="store_true", help="删除生成页面与构建缓存")
     args = parser.parse_args()
@@ -693,6 +859,7 @@ def main() -> int:
         part.intro = pandoc_md_to_html(pandoc, part.intro_md)
     for chapter in book.chapters:
         chapter.body = pandoc_md_to_html(pandoc, chapter.body_md)
+        chapter.sections = extract_sections(chapter.body)
         if not chapter.body:
             log(f"警告：{chapter.title} 没有正文")
 
@@ -758,10 +925,22 @@ def main() -> int:
         size = target.stat().st_size / 1024 / 1024
         log(f"docs/{pdf_name}（{size:.1f} MB）")
 
+    if args.no_epub:
+        log("跳过 EPUB")
+    else:
+        step("打包 EPUB")
+        cover = build_cover_image(cfg["book"], BUILD / "cover.png")
+        epub_path = SITE / cfg["site"]["epub_name"]
+        build_epub(book, cfg, pandoc, cover, epub_path)
+        log(f"docs/{cfg['site']['epub_name']}"
+            f"（{epub_path.stat().st_size / 1024 / 1024:.1f} MB）")
+
     print(f"\n\033[32m完成\033[0m，用时 {time.time() - started:.1f}s")
     print(f"  Web  docs/index.html")
     if not args.no_pdf:
         print(f"  PDF  docs/{cfg['site']['pdf_name']}")
+    if not args.no_epub:
+        print(f"  EPUB docs/{cfg['site']['epub_name']}")
     return 0
 
 

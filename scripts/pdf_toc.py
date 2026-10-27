@@ -66,33 +66,47 @@ def locate_pages(
                 pages["toc"] = index + 1
                 break
 
-    missing = [(slug, title) for slug, title, _ in entries if slug not in pages]
-    if not missing:
+    if all(slug in pages for slug, _title, _parent in entries):
         return pages
 
-    texts = [normalize(page.extract_text() or "") for page in reader.pages]
+    # 按行归一化后匹配行首，避免把正文里顺带提到的标题误当成小节起点
+    line_pages: list[list[str]] = []
+    joined: list[str] = []
+    for page in reader.pages:
+        lines = [normalize(line).lstrip("★") for line in (page.extract_text() or "").splitlines()]
+        lines = [line for line in lines if line]
+        line_pages.append(lines)
+        joined.append("".join(lines))
+
     needle_header = normalize(header)
+
+    def search(needle: str, require_header: bool, start: int) -> int | None:
+        for index in range(start, len(line_pages)):
+            if require_header and needle_header and needle_header not in joined[index]:
+                continue
+            for line in line_pages[index]:
+                if line.startswith(needle):
+                    return index
+            # 长标题被行宽折断时，首行会以标题前缀的形式出现
+            if len(needle) > 12:
+                for line in line_pages[index]:
+                    if len(line) >= 10 and needle.startswith(line):
+                        return index
+        return None
+
     cursor = 0
-    for slug, title in missing:
+    for slug, title, _parent in entries:
+        if slug in pages:
+            cursor = max(cursor, pages[slug] - 1)
+            continue
         needle = normalize(title)
         if not needle:
             continue
-
-        def search(require_header: bool, start: int = cursor) -> int | None:
-            for index in range(start, len(texts)):
-                if needle not in texts[index]:
-                    continue
-                if require_header and needle_header and needle_header not in texts[index]:
-                    continue
-                return index
-            return None
-
-        found = search(True)
+        found = search(needle, True, cursor)
         if found is None:
-            found = search(False)
-        if found is None and len(needle) > 10:
-            needle = needle[:10]
-            found = search(False)
+            found = search(needle, False, cursor)
+        if found is None and len(needle) > 12:
+            found = search(needle[:12], False, cursor)
         if found is not None:
             pages[slug] = found + 1
             cursor = found

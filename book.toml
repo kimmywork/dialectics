@@ -6,14 +6,21 @@
 title = "走出二选一"
 subtitle = "大众辩证思维手册"
 full_title = "走出二选一：大众辩证思维手册"
-author = ""                       # 留空则不显示作者
+author = "Kimmy"
 description = "从先秦诸子到现代认知科学，一本讲清楚矛盾、取舍、两难与悖论的大众辩证思维手册。"
 language = "zh-CN"
 source = "docs/dialectics.md"
 
+homepage = "https://kimleo.net"
+repo = "https://github.com/kimmywork/dialectics"
+license = "CC BY-NC-SA 4.0"
+license_note = "个人使用免费，商业使用需联系作者授权"
+license_url = "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans"
+
 [site]
-# 部署在 https://kimmywork.github.io/dialectics/，页面内部一律使用相对链接
+url = "https://dialectics.kimleo.net"
 pdf_name = "dialectics.pdf"
+epub_name = "dialectics.epub"
 
 [pdf]
 page_size = "A4"

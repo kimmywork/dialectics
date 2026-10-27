@@ -1,7 +1,7 @@
 PY ?= python3
 PORT ?= 8000
 
-.PHONY: all web pdf serve clean fonts check
+.PHONY: all web pdf epub serve clean fonts check
 
 all:            ## 构建网页 + PDF（输出到 docs/）
 	$(PY) build.py
@@ -11,6 +11,9 @@ web:            ## 只构建网页
 
 pdf:            ## 重建 PDF（PDF 同时放在 docs/ 供站内下载）
 	$(PY) build.py
+
+epub:           ## 构建网页 + EPUB（跳过 PDF）
+	$(PY) build.py --no-pdf
 
 serve:          ## 本地预览 http://localhost:8000
 	$(PY) build.py --no-pdf

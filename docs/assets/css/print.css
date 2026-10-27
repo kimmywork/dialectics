@@ -345,6 +345,30 @@ body.print {
   color: #9c3b24;
 }
 
+/* 星标与 [进阶深潜] */
+
+.print .star,
+.print .toc-star {
+  color: #9c3b24;
+  font-weight: 400;
+}
+
+.print .star { font-size: .78em; margin-right: .12em; }
+.print .toc-star { margin-left: .5em; font-size: .86em; }
+
+.print .tag-advanced {
+  display: inline-block;
+  margin-left: .35em;
+  padding: 0 .5em;
+  border: 1px solid #cfae9e;
+  border-radius: 1em;
+  font-size: .62em;
+  letter-spacing: .06em;
+  color: #9c3b24;
+  vertical-align: .16em;
+  white-space: nowrap;
+}
+
 /* ---------------- 正文 ---------------- */
 
 .pdf-chapter {
