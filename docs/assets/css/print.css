@@ -356,6 +356,25 @@ body.print {
 .print .star { font-size: .78em; margin-right: .12em; }
 .print .toc-star { margin-left: .5em; font-size: .86em; }
 
+.toc-sub {
+  display: block;
+  margin-top: .4mm;
+  font-size: 8.2pt;
+  line-height: 1.45;
+  letter-spacing: .01em;
+  color: #8c8477;
+}
+
+.part-ch-sub {
+  display: block;
+  margin-top: .5mm;
+  font-size: 8.2pt;
+  line-height: 1.45;
+  color: #7a7266;
+}
+
+.pdf-part .part-intro-empty { min-height: 26mm; }
+
 .print .tag-advanced {
   display: inline-block;
   margin-left: .35em;
@@ -383,14 +402,28 @@ body.print {
   color: #9c3b24;
 }
 
-.chapter-title {
-  margin: 0 0 10mm;
-  padding-bottom: 5mm;
+.pdf-chapter .chapter-head {
+  margin: 0 0 9mm;
+  padding-bottom: 4.5mm;
   border-bottom: 1pt solid #9c3b24;
+  break-after: avoid;
+}
+
+.chapter-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
   font-size: 20pt;
   line-height: 1.48;
   letter-spacing: .01em;
-  break-after: avoid;
+}
+
+.chapter-subtitle {
+  margin: 3mm 0 0;
+  font-size: 10pt;
+  line-height: 1.6;
+  letter-spacing: .02em;
+  color: #6b6459;
 }
 
 .print .prose p {

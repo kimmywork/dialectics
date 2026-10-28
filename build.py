@@ -131,8 +131,13 @@ class Chapter:
     body: str = ""
     label: str = ""
     name: str = ""
+    subtitle: str = ""
     starred: bool = False
     sections: list[tuple[str, str]] = field(default_factory=list)  # (锚点, 三级标题)
+
+    @property
+    def full_title(self) -> str:
+        return f"{self.title}（{self.subtitle}）" if self.subtitle else self.title
 
     @property
     def kicker(self) -> str:
@@ -185,6 +190,14 @@ class Book:
         chaps = sum(1 for c in self.chapters if c.title.startswith("第"))
         chars = len(re.findall(r"[\u4e00-\u9fff]", self.meta["source_text"]))
         return f"{numbered} 个部分 · {chaps} 章 · 约 {chars / 10000:.0f} 万字"
+
+
+def split_subtitle(title: str) -> tuple[str, str]:
+    """把标题末尾的「（如何……）」拆成副标题。"""
+    match = re.match(r"^(.*?)（([^（）]*)）\s*$", title.strip())
+    if match and len(match.group(1)) > 4:
+        return match.group(1).strip(), match.group(2).strip()
+    return title.strip(), ""
 
 
 def split_label(title: str) -> tuple[str, str]:
@@ -262,10 +275,11 @@ def parse_book(path: Path) -> Book:
             parts.append(current)
         else:
             chapter_index += 1
-            label, name = split_label(raw_title)
+            title, subtitle = split_subtitle(raw_title)
+            label, name = split_label(title)
             chapter = Chapter(
-                title=raw_title, body_md=body,
-                slug=slugify_chapter(raw_title, chapter_index),
+                title=title, subtitle=subtitle, body_md=body,
+                slug=slugify_chapter(title, chapter_index),
                 label=label, name=name, starred=starred,
             )
             if current is not None:
@@ -294,10 +308,12 @@ def nav_html(book: Book, current: str) -> str:
         aria = ' aria-current="page"' if current == ch.slug else ""
         num = ch.label or ""
         star = '<span class="nav-star" title="入门核心必读">★</span>' if ch.starred else ""
+        sub = f'<span class="nav-sub">{esc(ch.subtitle)}</span>' if ch.subtitle else ""
         return (f'<li><a class="nav-item{active}" href="{ch.page}"{aria} '
-                f'title="{esc(ch.title)}">'
+                f'title="{esc(ch.full_title)}">'
                 f'<span class="nav-num">{esc(num)}</span>'
-                f'<span class="nav-name">{esc(ch.name or ch.title)}</span>{star}</a></li>')
+                f'<span class="nav-name"><span class="nav-main">{esc(ch.name or ch.title)}</span>'
+                f'{sub}</span>{star}</a></li>')
 
     for ch in book.loose:
         rows.append(f'<div class="nav-solo"><ol class="nav-list">{chapter_row(ch)}</ol></div>')
@@ -345,13 +361,15 @@ def part_page_html(part: Part) -> str:
     else:
         head = f'<h1 class="part-title">{esc(part.label)}</h1>'
 
-    intro = f'<div class="prose part-intro">{part.intro}</div>' if part.intro else ""
+    intro = (f'<div class="prose part-intro">{part.intro}</div>' if part.intro
+             else '<div class="part-intro part-intro-empty" aria-hidden="true"></div>')
     items = []
     for n, ch in enumerate(part.chapters, 1):
         star = '<span class="star" title="入门核心必读">★</span>' if ch.starred else ""
+        sub = f'<span class="part-ch-sub">{esc(ch.subtitle)}</span>' if ch.subtitle else ""
         items.append(
             f'<li><a href="{ch.page}"><span class="part-ch-num">{n:02d}</span>'
-            f'<span class="part-ch-title">{esc(ch.title)}{star}</span>'
+            f'<span class="part-ch-title">{esc(ch.title)}{star}{sub}</span>'
             f'<span class="part-ch-arrow">→</span></a></li>'
         )
     listing = ('<ol class="part-chapters">' + "".join(items) + "</ol>") if items else ""
@@ -361,8 +379,9 @@ def part_page_html(part: Part) -> str:
 def chapter_page_html(ch: Chapter) -> str:
     kicker = f'<p class="kicker">{esc(ch.kicker)}</p>' if ch.kicker else ""
     star = '<span class="star" title="入门核心必读">★</span> ' if ch.starred else ""
+    sub = f'<p class="chapter-sub">{esc(ch.subtitle)}</p>' if ch.subtitle else ""
     return (f'<article class="chapter">{kicker}'
-            f'<header class="chapter-head"><h1>{star}{esc(ch.title)}</h1></header>'
+            f'<header class="chapter-head"><h1>{star}{esc(ch.title)}</h1>{sub}</header>'
             f'<div class="prose">{ch.body}</div></article>')
 
 
@@ -384,7 +403,8 @@ def chapter_description(ch: Chapter) -> str:
 
 def catalog_html(book: Book) -> str:
     def title(ch: Chapter) -> str:
-        return esc(ch.name or ch.title)
+        sub = f'<span class="catalog-sub">{esc(ch.subtitle)}</span>' if ch.subtitle else ""
+        return f'<span class="catalog-main">{esc(ch.name or ch.title)}</span>{sub}'
 
     def star(ch: Chapter) -> str:
         return '<span class="catalog-star" title="入门核心必读">★</span>' if ch.starred else ""
@@ -489,10 +509,6 @@ def build_site(book: Book, cfg: dict, pandoc: str, fonts: dict[int, Path]) -> di
     <h2 class="section-title">目录</h2>
     {catalog_html(book)}
   </section>
-  <footer class="home-foot">
-    <p>{esc(author)} · <a href="{license_url}">{esc(license_name)}</a> · <a href="{repo_url}">GitHub 源码</a></p>
-    <p>Markdown 原文 · pandoc 渲染 · Chromium 排版 · 字体 Noto Serif SC · {datetime.now().year}</p>
-  </footer>
 </article>"""
     pages["index.html"] = page("", home, slug="index", cls="home")
 
@@ -552,9 +568,10 @@ def print_colophon(meta: dict, cfg: dict) -> str:
 def print_toc(book: Book) -> str:
     def row(ch: Chapter, extra: str = "") -> str:
         star = '<span class="toc-star">★</span>' if ch.starred else ""
+        sub = f'<span class="toc-sub">{esc(ch.subtitle)}</span>' if ch.subtitle else ""
         return (f'<a class="toc-row{extra}" href="#{ch.slug}">'
                 f'<span class="toc-label">{esc(ch.label)}</span>'
-                f'<span class="toc-name">{esc(ch.name or ch.title)}</span>{star}</a>')
+                f'<span class="toc-name">{esc(ch.name or ch.title)}{sub}</span>{star}</a>')
 
     rows = [row(ch, " toc-solo") for ch in book.loose]
     for part in book.parts:
@@ -574,7 +591,8 @@ def outline_entries(book: Book) -> list[tuple[str, str, str | None]]:
         ("toc", "目录", None),
     ]
     def label(ch: Chapter) -> str:
-        return f"★ {ch.title}" if ch.starred else ch.title
+        title = ch.full_title
+        return f"★ {title}" if ch.starred else title
 
     def add(ch: Chapter, parent: str | None) -> None:
         entries.append((ch.slug, label(ch), parent))
@@ -602,23 +620,33 @@ def load_pdf_toc():
 def print_chapter(ch: Chapter) -> str:
     kicker = f'<p class="kicker">{esc(ch.kicker)}</p>' if ch.kicker else ""
     star = '<span class="star">★</span> ' if ch.starred else ""
+    sub = f'<p class="chapter-subtitle">{esc(ch.subtitle)}</p>' if ch.subtitle else ""
     return (f'<section class="pdf-chapter" id="{ch.slug}">{kicker}'
-            f'<h1 class="chapter-title">{star}{esc(ch.title)}</h1>'
+            f'<header class="chapter-head"><h1 class="chapter-title">{star}{esc(ch.title)}</h1>'
+            f'{sub}</header>'
             f'<div class="prose">{ch.body}</div></section>')
 
 
 def print_part(part: Part) -> str:
-    intro = f'<div class="prose">{part.intro}</div>' if part.intro else ""
-    listing = ""
-    if part.chapters:
-        listing = '<ol class="part-chapters">' + "".join(
+    # 没有导言的部分也留一段空白，别让章节列表紧贴标题
+    intro = (f'<div class="prose">{part.intro}</div>' if part.intro
+             else '<div class="prose part-intro-empty" aria-hidden="true"></div>')
+
+    items = []
+    for n, ch in enumerate(part.chapters, 1):
+        sub = f'<span class="part-ch-sub">{esc(ch.subtitle)}</span>' if ch.subtitle else ""
+        items.append(
             f'<li><span class="part-ch-num">{n:02d}</span>'
-            f'<span class="part-ch-title">{esc(ch.name or ch.title)}</span></li>'
-            for n, ch in enumerate(part.chapters, 1)
-        ) + "</ol>"
-    title = f'<h1 class="part-title">{esc(part.name)}</h1>' if part.name else ""
+            f'<span class="part-ch-title">{esc(ch.name or ch.title)}{sub}</span></li>'
+        )
+    listing = f'<ol class="part-chapters">{"".join(items)}</ol>' if items else ""
+    if part.name:
+        head = (f'<p class="part-label">{esc(part.label)}</p>'
+                f'<h1 class="part-title">{esc(part.name)}</h1>')
+    else:
+        head = f'<h1 class="part-title">{esc(part.label)}</h1>'
     return (f'<section class="pdf-part" id="{part.slug}">'
-            f'<p class="part-label">{esc(part.label)}</p>{title}{intro}{listing}</section>')
+            f'{head}{intro}{listing}</section>')
 
 
 def build_print(book: Book, cfg: dict, fonts: dict[int, Path]) -> Path:
@@ -742,6 +770,12 @@ def build_epub(book: Book, cfg: dict, pandoc: str, cover: Path | None, target: P
     )
     # EPUB 是 XHTML，原始 HTML 里的 <br> 必须写成自闭合，否则 Books 会报标签未闭合
     text = re.sub(r"<br\s*/?>", "<br />", text, flags=re.I)
+    # 章节标题末尾的「（副标题）」拆成下一行的小字，和网页/PDF 的层次保持一致
+    text = re.sub(
+        r"^(##\s+)(.*?)（([^（）]*)）\s*$",
+        lambda m: f'{m.group(1)}{m.group(2)}\n\n<p class="chapter-sub">{m.group(3)}</p>',
+        text, flags=re.M,
+    )
     BUILD.mkdir(exist_ok=True)
     staging = BUILD / "epub.md"
     staging.write_text(text, encoding="utf-8")
