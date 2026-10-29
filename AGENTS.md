@@ -40,7 +40,7 @@ Never hand-edit generated files. Change sources, assets, config, or templates, t
 
 ## Non-obvious constraints
 
-- **Chinese web fonts come from a CDN.** Pages load Fontsource's unicode-range chunks (`book.toml` → `[fonts] chinese_cdn`), 400 weight only by default (`web_bold = false`); bold is synthesized. Do not commit CJK font files to `docs/`.
+- **Chinese web fonts come from a CDN.** Pages load Fontsource's unicode-range chunks (`book.toml` → `[fonts] chinese_cdn`), 400 and 700 weights by default (`web_bold = true`); turning it off saves about 1 MB but synthesizes bold. Do not commit CJK font files to `docs/`.
 - **PDF fonts are generated locally.** `prepare_fonts` writes Noto 400/700 subsets to `build/fonts/` (ignored); they are embedded into the PDF. Static instances are mandatory: variable fonts make Chromium emit Type3 glyphs and inflate PDFs to about 24 MB.
 - **English fonts are committed.** Newsreader (400/700/400 italic, about 100 KB) is used by web and PDF and embedded into both EPUBs.
 - **Mixed-script stack is `"Newsreader", "Noto Serif SC", …`** for Chinese too: Latin/digits use Newsreader, CJK falls back to the CDN Noto chunks. Chinese pages preload Newsreader.

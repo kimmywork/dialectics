@@ -78,11 +78,11 @@ LICENSE.md                许可协议全文
 
 ## 字体
 
-- **中文 Web**：通过 **Fontsource CDN**（jsDelivr）加载 Noto Serif SC。CSS 按 `unicode-range` 拆成上百个分包，浏览器只下载当前页面用到的块；网页只加载 400 字重，标题与加粗用合成粗体，首屏约 1.2 MB（含 CSS），后续页面直接命中缓存。仓库里不存放中文字体。
+- **中文 Web**：通过 **Fontsource CDN**（jsDelivr）加载 Noto Serif SC。CSS 按 `unicode-range` 拆成上百个分包，浏览器只下载当前页面用到的块；网页加载 400 / 700 两个字重（真粗体），首屏字体约 2.1 MB（含 CSS），后续页面直接命中缓存。仓库里不存放中文字体。
 - **中文 PDF**：构建时从系统 Noto Serif SC 生成 400/700 子集到 `build/fonts/`（不入库），嵌入 PDF。换机器构建需要本机安装 Noto Serif SC。
 - **英文**：Newsreader 的 Regular / Bold / Italic 子集（约 100 KB）随仓库提交，供网页、PDF 与 EPUB 共用；EPUB 内嵌该字体。
 - **中英混排**：字体栈统一为 `"Newsreader", "Noto Serif SC", …`，拉丁字母与数字用 Newsreader，汉字回退 Noto；中文页面也会预加载 Newsreader。
-- CDN 地址在 `book.toml` 的 `[fonts] chinese_cdn`；`web_bold = false` 控制网页是否额外加载 700 分包（打开会多约 1 MB）。
+- CDN 地址在 `book.toml` 的 `[fonts] chinese_cdn`；`web_bold = true` 控制网页是否加载 700 分包；关掉可省约 1 MB，但标题会变成合成粗体。
 
 字体查找顺序：`book.toml` 指定文件 → `docs/assets/fonts/src/` → 系统字体目录 → `fc-match`。PDF 字体必须实例化成静态字重：Chromium 的 PDF 后端无法嵌入可变字体，会把字形降级成 Type3 路径，PDF 会从几 MB 膨胀到二十多 MB。
 
