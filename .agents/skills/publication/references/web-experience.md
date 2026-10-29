@@ -41,8 +41,10 @@ Expose the Markdown source at `/<code>/dialectics.md` and link it with `rel="alt
 Book-level button on the landing page:
 
 ```text
-Help me interpret [<book title>](<absolute markdown URL>), using <named method> from Appendix C or another structured approach.
+Help me interpret [<book title>](<absolute markdown URL>). Use a structured analytical approach.
 ```
+
+Keep the prompt focused on the book: link to the Markdown source and ask for a structured analytical approach. Do not prescribe a specific book method or appendix workflow; let the model choose the structure.
 
 Chapter-level button below the chapter title, above the prose:
 
@@ -50,6 +52,7 @@ Chapter-level button below the chapter title, above the prose:
 Help me interpret this chapter from "<book title>":
 "<chapter title>"
 <absolute chapter URL>
+Use a structured analytical approach.
 ```
 
 Implementation:

@@ -494,10 +494,10 @@ def chapter_page_html(ch: Chapter, book: Book, site_url: str) -> str:
     url = f"{site_url}/{book.code}/{ch.page}"
     if book.code == "zh":
         prompt = (f"帮我解读这本《{book.meta['full_title']}》的这一章内容：\n"
-                  f"《{ch.title}》\n{url}")
+                  f"《{ch.title}》\n{url}\n使用结构化的分析方法。")
     else:
         prompt = (f'Help me interpret this chapter from "{book.meta["full_title"]}":\n'
-                  f'"{ch.title}"\n{url}')
+                  f'"{ch.title}"\n{url}\nUse a structured analytical approach.')
     ai = (f'<div class="ai-read chapter-ai">'
           f'<button class="btn btn-ai" data-ai-copy data-prompt="{esc(prompt).replace(chr(10), "&#10;")}" '
           f'data-toast="{esc(book.ui["ai_copied"])}" data-fail="{esc(book.ui["ai_failed"])}">'
@@ -697,16 +697,14 @@ def build_landing(books: list[Book], cfg: dict, fonts: dict, asset_version: str 
     template = (ROOT / "templates" / "landing.html").read_text(encoding="utf-8")
     site = cfg["site"]["url"].rstrip("/")
     prompts = {
-        "zh": (f"帮我解读这本 [《走出二选一：大众辩证思维手册》]({site}/zh/dialectics.md)，"
-               "可以使用附录 C 中提及的“辩证阅读法”，或者其他适合结构化解读这本书的方法。"),
+        "zh": f"帮我解读这本 [《走出二选一：大众辩证思维手册》]({site}/zh/dialectics.md)。使用结构化的分析方法。",
         "en": (f"Help me interpret [Beyond Either/Or: A Practical Handbook of Dialectical Thinking]"
-               f"({site}/en/dialectics.md). You can use the \"Four-Step Dialectical Book-Dissection Method\" "
-               "mentioned in Appendix C, or any other structured approach that suits this book."),
+               f"({site}/en/dialectics.md). Use a structured analytical approach."),
     }
     ai_labels = {
-        "zh": ("✦ AI 帮我读", '复制提示词 · 在 AI 对话中粘贴 · <a href="zh/dialectics.md">Markdown 原文</a>',
+        "zh": ("✦ AI 帮我读", "复制提示词 · 在 AI 对话中粘贴",
                "提示词已复制，去任意 AI 对话粘贴即可", "复制失败，请手动选择提示词复制"),
-        "en": ("✦ Read with AI", 'Copies a prompt · paste it into any AI chat · <a href="en/dialectics.md">Markdown source</a>',
+        "en": ("✦ Read with AI", "Copies a prompt · paste it into any AI chat",
                "Prompt copied. Paste it into any AI chat.", "Copy failed — please copy the prompt manually."),
     }
     blocks = {}
@@ -1293,7 +1291,11 @@ def main() -> int:
             chapter.sections = extract_sections(chapter.body)
 
     step("生成网页")
-    asset_version = str(int(max(p.stat().st_mtime for p in ASSETS.rglob("*") if p.is_file())))
+    # 只用 CSS/JS/字体等代码资源的 mtime 做缓存版本；分享图重生成不改动版本号。
+    asset_version = str(int(max(
+        p.stat().st_mtime for p in ASSETS.rglob("*")
+        if p.is_file() and "share" not in p.relative_to(ASSETS).parts
+    )))
     pages = {book.code: build_site(book, cfg, {}, asset_version) for book in books}
     landing = build_landing(books, cfg, {}, asset_version)
     site_text = landing + "\n" + "\n".join("\n".join(p.values()) for p in pages.values())
