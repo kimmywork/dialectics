@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN" data-lang="{{default}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>走出二选一 · Beyond Either/Or</title>
+<meta name="description" content="《走出二选一：大众辩证思维手册》与英文版 Beyond Either/Or 的双语入口。">
+<meta name="color-scheme" content="light dark">
+<link rel="alternate" hreflang="zh" href="zh/index.html">
+<link rel="alternate" hreflang="en" href="en/index.html">
+<link rel="stylesheet" href="assets/css/base.css?v={{asset_version}}">
+<link rel="stylesheet" href="assets/css/web.css?v={{asset_version}}">
+<link rel="stylesheet" href="assets/css/landing.css?v={{asset_version}}">
+<script>
+(function () {
+  var lang = "{{default}}";
+  try {
+    var stored = localStorage.getItem("dialectics.lang");
+    var nav = (navigator.language || "en").toLowerCase();
+    lang = stored || (nav.indexOf("zh") === 0 ? "zh" : "en");
+    var theme = localStorage.getItem("dialectics.theme");
+    if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+  } catch (e) {}
+  document.documentElement.dataset.lang = lang;
+  document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+})();
+</script>
+</head>
+<body class="landing">
+<header class="landing-top">
+  <a class="landing-brand" href="index.html">走出二选一 <span>·</span> Beyond Either/Or</a>
+  <div class="lang-switch" role="group" aria-label="Language">
+    <button type="button" data-set-lang="zh">中文</button>
+    <button type="button" data-set-lang="en">EN</button>
+  </div>
+</header>
+
+<main class="landing-main" id="main">
+{{zh_block}}
+{{en_block}}
+</main>
+
+<footer class="landing-foot">
+  <p>Kimmy · {{year}} · <a href="{{license_url}}">{{license}}</a></p>
+  <p><a href="https://github.com/kimmywork/dialectics">GitHub</a></p>
+</footer>
+
+<script src="assets/js/landing.js?v={{asset_version}}"></script>
+</body>
+</html>

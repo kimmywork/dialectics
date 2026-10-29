@@ -20,8 +20,8 @@ serve:          ## 本地预览 http://localhost:8000
 	@echo "→ http://localhost:$(PORT)/"
 	@$(PY) -m http.server $(PORT) --directory docs
 
-fonts:          ## 按当前正文重新生成字体子集
-	$(PY) scripts/prepare_fonts.py --chars-file docs/dialectics.md --out docs/assets/fonts
+fonts:          ## 按当前正文重新生成中英文字体子集
+	$(PY) scripts/prepare_fonts.py --chars-file markdown/dialectics.md --chars-file markdown/dialectics_en.md --out docs/assets/fonts
 
 clean:          ## 删除生成页面与缓存，保留源文件与 assets
 	$(PY) build.py --clean

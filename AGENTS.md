@@ -2,81 +2,65 @@
 
 ## Scope
 
-One Markdown manuscript produces three committed artifacts in `docs/`: an HTML site, an A4 PDF, and an EPUB. GitHub Pages serves `master` / `docs`. Do not add CI; builds run locally and artifacts are committed.
+A bilingual book publisher. Two Markdown manuscripts produce a language-aware landing page and two reading sites plus PDF/EPUB per language. Everything is written into `docs/`, committed, and served by GitHub Pages from `master` / `docs`. Do not add CI; builds run locally.
 
 ## Commands
 
 ```bash
 make check   # compile build.py and scripts/*
-make         # build HTML, PDF, EPUB into docs/
+make         # HTML, PDF, EPUB for both languages
 make web     # HTML only
-make pdf     # HTML + PDF
-make epub    # HTML + EPUB, no PDF
+make pdf     # HTML + both PDFs
+make epub    # HTML + both EPUBs
 make serve   # preview at http://localhost:8000
-make clean   # remove generated pages, PDF, EPUB, caches
-make fonts   # rebuild the font subset
+make clean   # remove generated pages, PDFs, EPUBs, caches
+make fonts   # rebuild Chinese and English font subsets
 ```
 
 Requirements: pandoc 3.x, Python 3.11+, local Chrome, `pip install -r requirements.txt`.
 
-## Sources
+## Sources and outputs
 
-- `docs/dialectics.md` — book text; the user owns the prose, do not rewrite it.
-- `book.toml` — title, author, homepage, license, source path.
-- `templates/` — page shells.
-- `docs/assets/` — CSS, JS, fonts. These are source files even though they are published.
+- `markdown/dialectics.md`, `markdown/dialectics_en.md` — book text; the user owns the prose.
+- `book.toml` — site settings and one `[editions.<code>]` table per language.
+- `docs/assets/` — CSS, JS, fonts (source files even though published).
+- `templates/` — layout, print, and landing shells.
 - `scripts/` — font subsetting, PDF bookmarks, LaTeX-to-text for EPUB.
+- Generated: `docs/index.html`, `docs/zh/*`, `docs/en/*`, `docs/*/dialectics.pdf|epub`.
 
-Never hand-edit generated files: `docs/*.html`, `docs/dialectics.pdf`, `docs/dialectics.epub`. Change source, assets, or templates, then rebuild.
+Never hand-edit generated files. Change sources, assets, config, or templates, then rebuild.
 
-## Manuscript conventions
+## Bilingual rules
 
-- `# ` part, `## ` chapter, `### ` section.
-- A leading `★` on a chapter marks an entry-level chapter. The build renders it as a badge and keeps TOC numbers aligned.
-- A trailing `（…）` on a chapter title becomes a smaller subtitle line in every output.
-- Leave a blank line before lists.
-- Use single backslashes in LaTeX. Control characters in the source mean corrupted escapes; the build warns about them.
-- EPUB math is Unicode text. `scripts/latex_text.py` handles fractions, scripts, Greek letters, arrows, and operators; unknown commands are reported. Extend the converter instead of returning to MathML.
+- The landing page is the only place that exposes PDF/EPUB downloads. Reading pages (`docs/zh`, `docs/en`) must not link downloads; they link to each other for language switching.
+- The landing page selects its language from `localStorage` or `navigator.language` and persists manual choices. Keep this client-side.
+- UI strings live in the `UI` dict in `build.py`. Adding a language means adding an edition table, a source file, and a `UI` entry; slugs and output paths derive from `code`.
+- Titles may contain `*emphasis*`; use `title_html()` for headings and `title_text()`/full_title for TOC, navigation, and bookmarks.
+- A leading `★` marks entry-level chapters; a trailing `（…）` or `(How ...)` becomes a subtitle line.
 
-## Non-obvious build constraints
+## Non-obvious constraints
 
-- **Fonts must be static instances.** Variable fonts make Chromium emit Type3 glyph fonts and inflate the PDF from about 4 MB to 24 MB. `scripts/prepare_fonts.py` instances the variable font at 400/700 before subsetting.
-- **Cover sizing.** The cover uses absolute `inset` inside a fixed-height page. `height: 100%` plus margins overflowed onto a second page.
-- **PDF bookmarks need page numbers.** Chromium writes named destinations only for linked anchors. Parts and chapters resolve from those destinations; sections (`h3`) use line-start text search in `scripts/pdf_toc.py`. Keep the section search line-based and advance the cursor for named entries, or the preface guide page matches first.
-- **The printed TOC intentionally has no page numbers.** Navigation belongs to PDF bookmarks and the web sidebar.
-- **EPUB is XHTML.** Self-close void tags (`<br />`). Never run global string replacements that reach code spans (for example the backticked tag name in the preface); scope replacements to headings.
-- **EPUB math.** WeChat Reading and Apple Books ignore MathML, so formulas are converted to Unicode text at packaging time.
-- **Sidebar scroll.** `docs/assets/js/app.js` stores the nav scroll position in `sessionStorage` so page changes do not jump to the top.
+- **Static font instances.** Chinese uses Noto Serif SC, English uses Newsreader; both are instantiated at 400/700 (plus Newsreader italic) before subsetting. Variable fonts make Chromium emit Type3 glyph fonts and inflate PDFs to about 24 MB.
+- **EPUB embeds Newsreader** (English only) under `EPUB/fonts/`; CSS references `../fonts/...`.
+- **Currency dollars.** English prose must escape money as `\$`. The EPUB math converter only matches unescaped `$...$`; do not remove the negative lookbehind or prose will be wrapped into formulas.
+- **Cover sizing.** The cover uses absolute `inset` inside a fixed-height page; `height: 100%` plus margins created a blank second page.
+- **PDF bookmarks need page numbers.** Chromium writes named destinations only for linked anchors. Parts/chapters resolve from those; sections (`h3`) use line-start text search in `scripts/pdf_toc.py`. Advance the cursor for named entries or the preface guide page matches first.
+- **Printed TOC has no page numbers**; navigation belongs to PDF bookmarks and the web sidebar.
+- **EPUB is XHTML.** Self-close void tags. Scope string replacements to headings; global replacements previously corrupted code spans.
+- **Asset cache busting.** Page templates append `?v=<timestamp>` to CSS/JS. Without it, browsers keep old styles after a rebuild.
+- **Sidebar scroll and resume keys are per edition** (`dialectics.nav.<code>`, `dialectics.resume.<code>`).
 
 ## Verification
 
 Before committing:
 
 1. `make check` and `make` complete.
-2. PDF: cover is one page; bookmarks have three levels (part, chapter, section); printed TOC shows subtitles.
-3. EPUB: every `.xhtml`, `.opf`, and `.ncx` parses as XML; no `<math>` elements; no raw `<br>`; formulas appear as text.
-4. Web: home, one chapter, and one part page render; mobile actions show a single full-width primary button.
-5. Privacy: `git grep -n "qliu23\|/Users/" docs` returns nothing.
-
-Quick checks:
-
-```bash
-python3 - <<'PY'
-from pypdf import PdfReader
-r = PdfReader("docs/dialectics.pdf")
-def walk(items, depth=0, out=None):
-    out = out if out is not None else []
-    for item in items:
-        if isinstance(item, list):
-            walk(item, depth + 1, out)
-        else:
-            out.append(depth)
-    return out
-print("pages", len(r.pages), "max bookmark depth", max(walk(r.outline)))
-PY
-unzip -l docs/dialectics.epub | head
-```
+2. Landing: correct language by browser locale; manual switch persists after reload; downloads point to the chosen language.
+3. Reading pages: no PDF/EPUB links; language switch goes to the other edition; subtitles and stars render.
+4. PDFs: one-page cover; three-level bookmarks; English body uses Newsreader, Chinese uses Noto.
+5. EPUBs: all `.xhtml`, `.opf`, `.ncx` parse as XML; no raw `<br>`; no `<math>`; currency renders as text, not formulas.
+6. Privacy: `git grep -n "qliu23\|/Users/" docs` returns nothing.
 
 ## Committing
 
-Commit source changes and regenerated `docs/` artifacts together. Do not commit `build/`, `.cache/`, `__pycache__/`, `.DS_Store`, or `docs/assets/fonts/src/`.
+Commit source changes and regenerated `docs/` together. Do not commit `build/`, `.cache/`, `__pycache__/`, `.DS_Store`, or `docs/assets/fonts/src/`.

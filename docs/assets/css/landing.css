@@ -1,0 +1,166 @@
+/* 双语落地页：按浏览器语言展示中文或英文版本。 */
+
+.landing {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.landing-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.6rem;
+}
+
+.landing-brand {
+  color: var(--ink);
+  font-size: .92rem;
+  letter-spacing: .06em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.landing-brand span { color: var(--accent); margin: 0 .3em; }
+
+.lang-switch {
+  display: inline-flex;
+  flex: none;
+  padding: .18rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper-raised);
+}
+.lang-switch button {
+  padding: .32rem .85rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  font-size: .78rem;
+  letter-spacing: .06em;
+  cursor: pointer;
+}
+.lang-switch button[aria-pressed="true"] {
+  background: var(--accent);
+  color: #fffaf4;
+}
+
+.landing-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.edition {
+  display: none;
+  position: relative;
+  width: 100%;
+  max-width: 46rem;
+  text-align: center;
+}
+.edition::before {
+  content: "";
+  position: absolute;
+  inset: -6rem -4rem auto;
+  height: 30rem;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 9%, transparent), transparent 72%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+html[data-lang="zh"] [data-lang-block="zh"],
+html[data-lang="en"] [data-lang-block="en"] { display: block; }
+html:not([data-lang]) .edition { display: block; }
+
+.edition-kicker {
+  margin: 0 0 1.3rem;
+  font-family: var(--sans);
+  font-size: .72rem;
+  letter-spacing: .42em;
+  text-indent: .42em;
+  color: var(--accent);
+}
+
+.edition-title {
+  margin: 0;
+  font-size: clamp(2.4rem, 7vw, 4.4rem);
+  line-height: 1.12;
+  letter-spacing: .06em;
+  text-indent: .06em;
+}
+[data-lang-block="en"] .edition-title {
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.18;
+  letter-spacing: .01em;
+  text-indent: 0;
+}
+
+.edition-subtitle {
+  margin: 1rem 0 0;
+  font-size: clamp(.95rem, 1.8vw, 1.2rem);
+  letter-spacing: .24em;
+  text-indent: .24em;
+  color: var(--ink-soft);
+}
+[data-lang-block="en"] .edition-subtitle {
+  letter-spacing: .04em;
+  text-indent: 0;
+}
+
+.edition-author {
+  margin: .75rem 0 0;
+  font-family: var(--sans);
+  font-size: .82rem;
+  letter-spacing: .16em;
+  color: var(--ink-faint);
+}
+.edition-author a { color: inherit; }
+.edition-author a:hover { color: var(--accent); }
+
+.edition-desc {
+  max-width: 34rem;
+  margin: 1.8rem auto 0;
+  color: var(--ink-soft);
+  font-size: .96rem;
+  line-height: 1.9;
+}
+
+.edition-stats {
+  margin: 1.3rem 0 0;
+  font-family: var(--sans);
+  font-size: .76rem;
+  letter-spacing: .12em;
+  color: var(--ink-faint);
+}
+
+.edition-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .7rem;
+  margin-top: 2rem;
+}
+.edition-actions .btn { min-width: 6.5rem; }
+
+.landing-foot {
+  padding: 1.4rem 1.2rem 2.4rem;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: .74rem;
+  letter-spacing: .06em;
+  color: var(--ink-faint);
+}
+.landing-foot p { margin: .2rem 0; }
+.landing-foot a { color: var(--ink-soft); }
+.landing-foot a:hover { color: var(--accent); }
+
+@media (max-width: 520px) {
+  .landing-top { padding: 1rem; }
+  .edition-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .edition-actions .btn-primary { grid-column: 1 / -1; }
+}

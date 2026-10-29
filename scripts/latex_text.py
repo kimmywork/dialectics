@@ -78,7 +78,7 @@ def _fraction(a: str, b: str) -> str:
     return f"{wrap(a)}/{wrap(b)}"
 
 
-def convert(tex: str, report: list[str] | None = None) -> str:
+def convert(tex: str, report: set[str] | None = None) -> str:
     out: list[str] = []
     i = 0
     while i < len(tex):
@@ -99,7 +99,10 @@ def convert(tex: str, report: list[str] | None = None) -> str:
             while i < len(tex) and tex[i] == " ":
                 i += 1
 
-            if name == "frac":
+            if name == "vec":
+                arg, i = _read_arg(tex, i)
+                out.append(arg + "\u20d7")
+            elif name == "frac":
                 a, i = _read_arg(tex, i)
                 b, i = _read_arg(tex, i)
                 out.append(_fraction(a, b))
@@ -113,7 +116,7 @@ def convert(tex: str, report: list[str] | None = None) -> str:
                     out.append(" ")
             else:
                 if name not in SYMBOLS and report is not None:
-                    report.append(name)
+                    report.add(name)
                 out.append(SYMBOLS.get(name, name))
         elif ch in "_^":
             arg, i = _read_arg(tex, i + 1)
@@ -142,7 +145,7 @@ def convert(tex: str, report: list[str] | None = None) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def to_html(tex: str, display: bool = False, report: list[str] | None = None) -> str:
+def to_html(tex: str, display: bool = False, report: set[str] | None = None) -> str:
     """把公式转成带样式的文本片段。"""
     body = html.escape(convert(tex, report))
     if display:

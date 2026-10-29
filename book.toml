@@ -1,34 +1,49 @@
-# 《走出二选一》发布配置
+# 《走出二选一》/ Beyond Either/Or 发布配置
 #
-# 修改这里的元信息后重新运行 `make` 即可，正文仍然只有 docs/dialectics.md 一个源文件。
+# 每个 edition 对应一种语言：源文件在 markdown/，产物写到 docs/<code>/。
+# 改完这里重新运行 `make`。
 
-[book]
+[site]
+url = "https://dialectics.kimleo.net"
+default = "zh"                    # 落地页在无法判断语言时的回退
+
+[pdf]
+page_size = "A4"
+
+[editions.zh]
+code = "zh"
+language = "zh-CN"
 title = "走出二选一"
 subtitle = "大众辩证思维手册"
 full_title = "走出二选一：大众辩证思维手册"
 author = "Kimmy"
 description = "从先秦诸子到现代认知科学，一本讲清楚矛盾、取舍、两难与悖论的大众辩证思维手册。"
-language = "zh-CN"
-source = "docs/dialectics.md"
-
+source = "markdown/dialectics.md"
 homepage = "https://kimleo.net"
 repo = "https://github.com/kimmywork/dialectics"
 license = "CC BY-NC-SA 4.0"
 license_note = "个人使用免费，商业使用需联系作者授权"
 license_url = "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans"
-
-[site]
-url = "https://dialectics.kimleo.net"
-pdf_name = "dialectics.pdf"
-epub_name = "dialectics.epub"
-
-[pdf]
-page_size = "A4"
-title = "走出二选一：大众辩证思维手册"
-subject = "辩证思维"
 keywords = "辩证思维, 批判性思维, 矛盾, 悖论"
+
+[editions.en]
+code = "en"
+language = "en"
+title = "Beyond Either/Or"
+subtitle = "A Practical Handbook of Dialectical Thinking"
+full_title = "Beyond Either/Or: A Practical Handbook of Dialectical Thinking"
+author = "Kimmy"
+description = "A practical, example-driven handbook on dialectical thinking—from pre-Qin classics and Kant to modern cognitive science."
+source = "markdown/dialectics_en.md"
+homepage = "https://kimleo.net"
+repo = "https://github.com/kimmywork/dialectics"
+license = "CC BY-NC-SA 4.0"
+license_note = "Free for personal use; commercial use requires permission"
+license_url = "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+keywords = "dialectical thinking, critical thinking, contradiction, paradox"
 
 [fonts]
 family = "Noto Serif SC"
-# 可选：显式指定字体文件；留空则自动在系统中查找 Noto Serif SC
 source = ""
+# 可选：显式指定英文正文字体；留空则自动查找系统的 Newsreader
+newsreader_source = ""

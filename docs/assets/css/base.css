@@ -18,6 +18,30 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Newsreader";
+  src: url("../fonts/newsreader-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("../fonts/newsreader-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("../fonts/newsreader-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", Georgia, serif;
   --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
@@ -122,6 +146,8 @@ img, svg, video { max-width: 100%; height: auto; }
   text-justify: inter-ideograph;
   overflow-wrap: break-word;
 }
+
+html[lang="en"] .prose { text-align: left; }
 
 .prose > :first-child { margin-top: 0; }
 
@@ -373,3 +399,9 @@ div.math {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* 英文正文使用 Newsreader；放在文件末尾，确保覆盖 :root 的默认值 */
+html[lang="en"] {
+  --serif: "Newsreader", "Noto Serif SC", Georgia, serif;
+}
+

@@ -3,8 +3,10 @@
   "use strict";
 
   var root = document.documentElement;
+  var edition = root.dataset.edition || "zh";
   var THEME_KEY = "dialectics.theme";
-  var RESUME_KEY = "dialectics.resume";
+  var NAV_KEY = "dialectics.nav." + edition;
+  var RESUME_KEY = "dialectics.resume." + edition;
 
   function store(key, value) {
     try { localStorage.setItem(key, value); } catch (e) { /* 隐私模式下忽略 */ }
@@ -32,9 +34,6 @@
       root.dataset.theme = theme;
       if (persist) store(THEME_KEY, theme);
     }
-    themeButtons.forEach(function (btn) {
-      btn.setAttribute("title", "切换深色 / 浅色（当前：" + (theme === "dark" ? "深色" : theme === "light" ? "浅色" : "跟随系统") + "）");
-    });
   }
 
   themeButtons.forEach(function (btn) {
@@ -61,7 +60,8 @@
     sidebar.classList.toggle("is-open", open);
     document.body.classList.toggle("menu-open", open);
     menuBtn.setAttribute("aria-expanded", String(open));
-    menuBtn.setAttribute("aria-label", open ? "关闭目录" : "打开目录");
+    menuBtn.setAttribute("aria-label",
+      open ? (menuBtn.dataset.closeLabel || "Close") : (menuBtn.dataset.openLabel || "Menu"));
     if (open) {
       scrim.hidden = false;
       requestAnimationFrame(function () { scrim.classList.add("is-visible"); });
@@ -99,11 +99,11 @@
   var nav = document.querySelector(".sidebar-nav");
   if (nav) {
     try {
-      var savedNav = sessionStorage.getItem("dialectics.nav");
+      var savedNav = sessionStorage.getItem(NAV_KEY);
       if (savedNav !== null) nav.scrollTop = parseInt(savedNav, 10) || 0;
     } catch (e) { /* 隐私模式忽略 */ }
     nav.addEventListener("scroll", function () {
-      try { sessionStorage.setItem("dialectics.nav", String(nav.scrollTop)); } catch (e) {}
+      try { sessionStorage.setItem(NAV_KEY, String(nav.scrollTop)); } catch (e) {}
     }, { passive: true });
   }
 

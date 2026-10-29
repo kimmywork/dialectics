@@ -9,6 +9,11 @@
   --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
 }
 
+html[lang="en"] {
+  --serif: "Newsreader", "Noto Serif SC", serif;
+  --sans: "Newsreader", "Noto Serif SC", serif;
+}
+
 @page {
   size: A4;
   margin: 22mm 21mm 24mm;
@@ -439,6 +444,27 @@ body.print {
   text-indent: 2em;
   orphans: 3;
   widows: 3;
+}
+
+html[lang="en"] .print .prose,
+html[lang="en"] .print .prose p {
+  text-align: left;
+}
+
+html[lang="en"] .cover-kicker {
+  letter-spacing: .14em;
+  text-indent: 0;
+}
+
+html[lang="en"] .cover-foot {
+  letter-spacing: .06em;
+  text-indent: 0;
+}
+
+html[lang="en"] .cover-subtitle {
+  font-size: 14pt;
+  letter-spacing: .08em;
+  text-indent: 0;
 }
 
 .print .prose blockquote p,

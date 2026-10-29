@@ -255,6 +255,7 @@ body { overflow-wrap: break-word; }
 .sidebar-foot a { color: var(--ink-soft); padding: .2rem .35rem; border-radius: 4px; }
 .sidebar-foot a:hover { color: var(--accent); background: var(--quote-bg); }
 .sidebar-foot .icon-btn { width: 1.9rem; height: 1.9rem; margin-left: auto; }
+.sidebar-foot .lang-link { color: var(--accent); font-weight: 600; }
 
 .scrim { display: none; }
 

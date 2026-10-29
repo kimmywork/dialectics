@@ -1,5 +1,31 @@
 /* EPUB 阅读样式：去掉分页与页眉，保留书籍排版的基本层次。 */
 
+@font-face {
+  font-family: "Newsreader";
+  src: url("../fonts/newsreader-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("../fonts/newsreader-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("../fonts/newsreader-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+}
+
+html[lang="en"] body,
+:lang(en) {
+  font-family: "Newsreader", "Noto Serif SC", "Songti SC", serif;
+}
+
 body {
   font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
   line-height: 1.78;

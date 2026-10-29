@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="{{lang}}" data-theme="auto">
+<html lang="{{lang}}" data-edition="{{edition}}" data-theme="auto">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,8 +11,8 @@
 <meta property="og:title" content="{{title}}">
 <meta property="og:description" content="{{description}}">
 {{font_preload}}
-<link rel="stylesheet" href="assets/css/base.css">
-<link rel="stylesheet" href="assets/css/web.css">
+<link rel="stylesheet" href="{{asset_prefix}}assets/css/base.css?v={{asset_version}}">
+<link rel="stylesheet" href="{{asset_prefix}}assets/css/web.css?v={{asset_version}}">
 <script>
 (function () {
   try {
@@ -23,15 +23,17 @@
 </script>
 </head>
 <body class="{{body_class}}">
-<a class="skip-link" href="#main">跳到正文</a>
+<a class="skip-link" href="#main">{{skip}}</a>
 <div class="read-progress" aria-hidden="true"><span id="progress-bar"></span></div>
 
 <header class="topbar">
-  <button class="icon-btn menu-btn" id="menu-toggle" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">
+  <button class="icon-btn menu-btn" id="menu-toggle"
+          aria-label="{{menu_open}}" aria-expanded="false" aria-controls="sidebar"
+          data-open-label="{{menu_open}}" data-close-label="{{menu_close}}">
     <span class="icon-lines" aria-hidden="true"></span>
   </button>
   <a class="topbar-title" href="index.html">{{short_title}}</a>
-  <button class="icon-btn theme-btn" data-theme-toggle aria-label="切换主题">
+  <button class="icon-btn theme-btn" data-theme-toggle aria-label="{{theme}}" title="{{theme}}">
     <span class="theme-dot" aria-hidden="true"></span>
   </button>
 </header>
@@ -42,16 +44,13 @@
       <span class="sidebar-title">{{short_title}}</span>
       <span class="sidebar-sub">{{subtitle}}</span>
     </a>
-    <nav class="sidebar-nav" aria-label="全书目录">
+    <nav class="sidebar-nav" aria-label="{{contents_label}}">
 {{nav}}
     </nav>
     <div class="sidebar-foot">
-      <a href="{{pdf_href}}">PDF</a>
-      <span class="dot" aria-hidden="true">·</span>
-      <a href="{{epub_href}}">ePub</a>
-      <span class="dot" aria-hidden="true">·</span>
-      <a href="index.html#catalog">目录</a>
-      <button class="icon-btn theme-btn" data-theme-toggle aria-label="切换主题">
+      <a href="index.html#catalog">{{contents_label}}</a>
+      <a class="lang-link" href="{{lang_switch_href}}">{{lang_switch}}</a>
+      <button class="icon-btn theme-btn" data-theme-toggle aria-label="{{theme}}" title="{{theme}}">
         <span class="theme-dot" aria-hidden="true"></span>
       </button>
     </div>
@@ -62,11 +61,11 @@
 {{body}}
     <footer class="page-foot">
       <p>{{book_title}}</p>
-      <p>{{author}}{{year}} · <a href="{{license_url}}">{{license}}</a> · <a href="{{repo_url}}">GitHub 源码</a></p>
+      <p>{{author}}{{year}} · <a href="{{license_url}}">{{license}}</a> · <a href="{{repo_url}}">{{github_label}}</a></p>
     </footer>
   </main>
 </div>
 
-<script src="assets/js/app.js"></script>
+<script src="{{asset_prefix}}assets/js/app.js?v={{asset_version}}"></script>
 </body>
 </html>
