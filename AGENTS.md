@@ -50,7 +50,7 @@ Never hand-edit generated files. Change sources, assets, config, or templates, t
 - **Printed TOC has no page numbers**; navigation belongs to PDF bookmarks and the web sidebar.
 - **EPUB is XHTML.** Self-close void tags. Scope string replacements to headings; global replacements previously corrupted code spans.
 - **Asset cache busting.** Page templates append `?v=<timestamp>` to CSS/JS. Without it, browsers keep old styles after a rebuild.
-- **AI prompt button.** The landing page copies a per-language book prompt linking to `/zh/dialectics.md` or `/en/dialectics.md`; every chapter page has the same button with a chapter prompt (book title, chapter title, absolute page URL). The build copies the manuscripts there; keep URLs and prompt text in sync when editions or slugs change. Copy/toast logic lives in `docs/assets/js/ai-copy.js` and is shared with the landing page.
+- **AI prompt button.** The landing page copies a per-language book prompt linking to `/zh/dialectics.md` or `/en/dialectics.md`; every chapter page has the same button with a chapter prompt (book title, chapter title, absolute page URL). The build copies the manuscripts there; keep URLs and prompt text in sync when editions or slugs change. Copy/status logic lives in `docs/assets/js/ai-copy.js` and is shared with the landing page.
 - **Sidebar scroll and resume keys are per edition** (`dialectics.nav.<code>`, `dialectics.resume.<code>`).
 
 ## Verification

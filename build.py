@@ -501,7 +501,8 @@ def chapter_page_html(ch: Chapter, book: Book, site_url: str) -> str:
     ai = (f'<div class="ai-read chapter-ai">'
           f'<button class="btn btn-ai" data-ai-copy data-prompt="{esc(prompt).replace(chr(10), "&#10;")}" '
           f'data-toast="{esc(book.ui["ai_copied"])}" data-fail="{esc(book.ui["ai_failed"])}">'
-          f'{book.ui["ai_read"]}</button></div>')
+          f'{book.ui["ai_read"]}</button>'
+          f'<span class="ai-status" role="status" aria-live="polite" hidden></span></div>')
     return (f'<article class="chapter">{kicker}'
             f'<header class="chapter-head"><h1>{star}{title_html(ch.title)}</h1>{sub}</header>'
             f'{ai}<div class="prose">{ch.body}</div></article>')
@@ -728,6 +729,7 @@ def build_landing(books: list[Book], cfg: dict, fonts: dict, asset_version: str 
   <div class="ai-read">
     <button class="btn btn-ai" data-ai-copy data-prompt="{esc(prompts[book.code])}"
             data-toast="{esc(ai_toast)}" data-fail="{esc(ai_fail)}">{ai_label}</button>
+    <span class="ai-status" role="status" aria-live="polite" hidden></span>
     <span class="ai-hint">{ai_hint}</span>
   </div>
 </section>"""

@@ -2,19 +2,17 @@
 (function () {
   "use strict";
 
-  var toastTimer = null;
-
-  function showToast(text) {
-    var toast = document.getElementById("toast");
-    if (!toast) return;
-    toast.textContent = text;
-    toast.hidden = false;
-    requestAnimationFrame(function () { toast.classList.add("is-visible"); });
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () {
-      toast.classList.remove("is-visible");
-      setTimeout(function () { toast.hidden = true; }, 220);
-    }, 2600);
+  function showStatus(btn, text) {
+    var box = btn.closest(".ai-read") || btn.parentElement;
+    var status = box && box.querySelector(".ai-status");
+    if (!status) return;
+    status.textContent = text;
+    status.hidden = false;
+    if (status._timer) clearTimeout(status._timer);
+    status._timer = setTimeout(function () {
+      status.hidden = true;
+      status.textContent = "";
+    }, 2800);
   }
 
   function legacyCopy(text) {
@@ -43,9 +41,9 @@
   document.querySelectorAll("[data-ai-copy]").forEach(function (btn) {
     btn.addEventListener("click", function () {
       copyText(btn.dataset.prompt || "").then(function () {
-        showToast(btn.dataset.toast || "Copied.");
+        showStatus(btn, btn.dataset.toast || "Copied.");
       }).catch(function () {
-        showToast(btn.dataset.fail || "Copy failed.");
+        showStatus(btn, btn.dataset.fail || "Copy failed.");
       });
     });
   });

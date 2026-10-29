@@ -73,7 +73,7 @@
 .edition::before {
   content: "";
   position: absolute;
-  inset: -6rem -4rem auto;
+  inset: -6rem 0 auto;
   height: 30rem;
   background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 9%, transparent), transparent 72%);
   pointer-events: none;
