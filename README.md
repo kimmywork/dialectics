@@ -15,15 +15,18 @@
 # 依赖：pandoc、Python 3.11+、本机 Chrome（用于打印 PDF）
 # 建议：pip install -r requirements.txt
 #       —— pypdf 生成 PDF 书签；fonttools + brotli 生成字体子集
+# 验证：Node 20+，首次运行 npm install 与 npx playwright install chromium
 
 make            # 构建中英网页、两份 PDF 与两份 EPUB
 make web        # 只构建网页
-make pdf        # 重建两份 PDF（同时刷新网页）
+make pdf        # 构建网页 + 两份 PDF
 make epub       # 构建网页 + EPUB（跳过 PDF）
 make serve      # 本地预览 http://localhost:8000
 make clean      # 删除生成文件与缓存，保留源文件和 assets
 make fonts      # 重新生成中文 / 英文字体子集
 make check      # 语法检查 build.py 与 scripts/
+make verify     # 构建网页 + 产物检查 + Playwright 回归
+make verify-full # 全量构建（含 PDF/EPUB）+ 同一套检查
 ```
 
 构建完成后：
@@ -50,6 +53,10 @@ build.py                  构建入口：解析 → 渲染 → 网页 → PDF �
 scripts/prepare_fonts.py  Noto Serif SC 与 Newsreader 的静态字重子集化
 scripts/pdf_toc.py        按标题定位页码，写入三层 PDF 书签
 scripts/latex_text.py     LaTeX → Unicode 纯文本（EPUB 用）
+scripts/verify_artifacts.py PDF / EPUB / Markdown 产物校验
+tests/                    Playwright 功能与视觉回归
+playwright.config.js      本地静态服务器与截图配置
+package.json              @playwright/test 依赖与脚本
 templates/                网页外壳 / 打印外壳 / 双语落地页
 markdown/                 中英文正文源文件
 docs/index.html           双语落地页（生成物）
@@ -106,14 +113,34 @@ LICENSE.md                许可协议全文
 - **落地页**是纯静态 HTML + 一小段 JS，语言选择立即生效并持久化，无需后端。
 - 站点无第三方 JS 依赖；中文字体走 jsDelivr CDN（Fontsource 分包），英文与 PDF 字体本地生成或内嵌。
 
-## 维护检查
+## 自动化验证
+
+首次运行：
 
 ```bash
-make check      # Python 语法
-make            # 三种格式、两个语言都能生成
+make test-setup   # npm install + playwright install chromium
 ```
 
-发布前确认：
+```bash
+make verify         # 构建网页 + 产物检查 + Playwright 回归
+make verify-full    # 全量构建（含 PDF/EPUB）后再跑同一套检查
+npm run test:ui     # Playwright 交互式调试
+npm run test:update # 更新视觉回归基线（检查 diff 后再提交）
+```
+
+`make verify` 只重建网页；改过正文、PDF 或 EPUB 生成逻辑后，请用 `make verify-full`。
+
+覆盖范围：
+
+- `tests/build.spec.js`：页面 / PDF / EPUB / Markdown 产物存在，内部链接与字体资源可访问，下载只在落地页，生成的页面不含本机路径。
+- `tests/landing.spec.js`：浏览器语言检测与持久化、手动切换、亮 / 暗 / 跟随系统、下载、AI 提示词复制、横向溢出。
+- `tests/reading.spec.js`：目录跳转、翻页、键盘翻页、语言互跳、续读、侧栏滚动保持、进度条、抽屉动画、章节 AI、数学 / 表格 / 副标题。
+- `tests/visual.spec.js`：落地页中 / 英 / 移动端与章节亮 / 暗 / 移动端的截图基线。
+- `scripts/verify_artifacts.py`：PDF 页数与三层书签、EPUB 的 mimetype / XML / 无 MathML / 自闭合 `<br>`、Markdown 副本与源稿一致。
+
+视觉基线在 `tests/__screenshots__/`，属于源文件，需要提交。首次建立或设计变更后运行 `npm run test:update`，确认截图 diff 符合预期再提交。截图对字体渲染与平台敏感，换机器后如出现小差异，先更新基线并检查是否为预期变化。`playwright-report/` 与 `test-results/` 不提交。
+
+发布前人工确认：
 
 1. 落地页按浏览器语言显示对应版本，手动切换后刷新仍保持；
 2. 中英文阅读站都能打开，侧栏语言链接互跳正确；

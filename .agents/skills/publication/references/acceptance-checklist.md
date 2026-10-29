@@ -5,7 +5,8 @@ Run from the repository root before committing. Mark each item with the command 
 ## Build
 
 - [ ] `make check` passes.
-- [ ] `make` completes for every edition.
+- [ ] `make verify` passes; `make verify-full` passes after changing PDF/EPUB generation.
+- [ ] Visual baselines were reviewed, not blindly updated.
 - [ ] No stale generated files remain (the builder removes old `*.html`, PDF, EPUB, Markdown copies).
 - [ ] `docs/assets/` was not deleted.
 

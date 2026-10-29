@@ -15,9 +15,14 @@ make epub    # HTML + both EPUBs
 make serve   # preview at http://localhost:8000
 make clean   # remove generated pages, PDFs, EPUBs, caches
 make fonts   # rebuild Chinese and English font subsets
+make verify  # web build + artifact checks + Playwright regression
+make verify-full # full build (HTML/PDF/EPUB) + the same checks
+make test-setup  # npm install + Playwright Chromium
+npm run test:ui    # interactive Playwright debugging
+npm run test:update # refresh visual baselines, then review the diff
 ```
 
-Requirements: pandoc 3.x, Python 3.11+, local Chrome, `pip install -r requirements.txt`.
+Requirements: pandoc 3.x, Python 3.11+, local Chrome, `pip install -r requirements.txt`. Verification also needs Node 20+, `npm install`, and `npx playwright install chromium`.
 
 ## Sources and outputs
 
@@ -25,7 +30,9 @@ Requirements: pandoc 3.x, Python 3.11+, local Chrome, `pip install -r requiremen
 - `book.toml` — site settings and one `[editions.<code>]` table per language.
 - `docs/assets/` — CSS, JS, fonts (source files even though published).
 - `templates/` — layout, print, and landing shells.
-- `scripts/` — font subsetting, PDF bookmarks, LaTeX-to-text for EPUB.
+- `scripts/` — font subsetting, PDF bookmarks, LaTeX-to-text for EPUB, artifact verification.
+- `tests/` — Playwright build, interaction, and visual regression specs; `tests/__screenshots__/` holds committed baselines.
+- `playwright.config.js`, `package.json` — local static server, browser project, and test commands.
 - Generated: `docs/index.html`, `docs/zh/*`, `docs/en/*`, `docs/*/dialectics.pdf|epub`.
 
 Never hand-edit generated files. Change sources, assets, config, or templates, then rebuild.
@@ -57,12 +64,13 @@ Never hand-edit generated files. Change sources, assets, config, or templates, t
 
 Before committing:
 
-1. `make check` and `make` complete.
-2. Landing: correct language by browser locale; manual switch persists after reload; downloads point to the chosen language.
-3. Reading pages: no PDF/EPUB links; language switch goes to the other edition; subtitles and stars render.
-4. PDFs: one-page cover; three-level bookmarks; English body uses Newsreader, Chinese uses Noto. Chinese pages load the Fontsource CSS and only fetch chunks for visible text.
-5. EPUBs: all `.xhtml`, `.opf`, `.ncx` parse as XML; no raw `<br>`; no `<math>`; currency renders as text, not formulas.
-6. Privacy: `git grep -n "qliu23\|/Users/" docs` returns nothing.
+1. `make check` and `make verify` complete. Use `make verify-full` before a release or after changing PDF/EPUB generation.
+2. Playwright covers: build artifacts and internal links; locale detection and persistence; manual language switch; light/dark/system theme; downloads only on the landing page; catalog, pager, keyboard navigation, language links, resume, sidebar scroll, progress and drawer animation; chapter AI prompt content; math, tables, subtitles; mobile overflow.
+3. Visual baselines live in `tests/__screenshots__/` and must be reviewed. Refresh with `npm run test:update`; commit changed baselines only when the visual diff is intended.
+4. Manual/long-form checks: PDFs have a one-page cover and three-level bookmarks; EPUBs open in at least two readers and render math/currency as text.
+5. Privacy: `git grep -n "qliu23\|/Users/" docs` returns nothing.
+
+Do not commit `test-results/`, `playwright-report/`, `node_modules/`, or `blob-report/`.
 
 ## Committing
 

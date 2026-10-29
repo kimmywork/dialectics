@@ -27,7 +27,7 @@ Outputs: `docs/index.html` (landing), `docs/<code>/index.html` plus one page per
 4. **Build the site.** Render a language-aware landing page, per-edition home, part pages, chapter pages, sidebar, pager, and metadata. Add theme, language switch, progress, resume, and AI copy behavior.
 5. **Build the PDF.** Render a print HTML shell, concatenate print CSS, print with Chromium, then add a three-level outline with `pypdf`.
 6. **Build the EPUB.** Preprocess the Markdown (XHTML-safe tags, Unicode math, scoped heading rewrites), then invoke `pandoc --to=epub3` with metadata, cover, and embedded fonts.
-7. **Verify.** Run the acceptance checks in `references/acceptance-checklist.md`; inspect mobile overflow, PDF bookmarks, EPUB XML validity, fonts, share metadata, and privacy.
+7. **Verify.** Run `make verify` (or `make verify-full` after format changes). The suite combines Playwright specs for build/link integrity, navigation, language, theme, downloads, scrolling, animations, AI copy, and visual snapshots with `scripts/verify_artifacts.py` for PDF/EPUB/Markdown.
 8. **Publish.** Commit sources and regenerated `docs/` together, push `master`, and serve GitHub Pages from `/docs`.
 
 ## Non-negotiables
@@ -40,6 +40,7 @@ Outputs: `docs/index.html` (landing), `docs/<code>/index.html` plus one page per
 - Use static font instances for PDF. Variable fonts become Type3 glyphs and inflate the file.
 - EPUB must be valid XHTML. Close void tags, avoid raw MathML, and keep currency `$` out of math detection.
 - Avoid horizontal scrolling at every breakpoint; keep feedback inline in the document flow.
+- Automate regression with Playwright and an artifact verifier. Update visual baselines only after reviewing the diff.
 - Validate before committing. Commit sources and generated `docs/` in the same change.
 
 ## Reference map
@@ -47,6 +48,7 @@ Outputs: `docs/index.html` (landing), `docs/<code>/index.html` plus one page per
 - `references/pipeline-blueprint.md` — repository layout, config, parsing model, build stages, and code patterns.
 - `references/web-experience.md` — landing page, reading shell, themes, resume, AI copy, share cards, fonts, CSS.
 - `references/print-and-epub.md` — print CSS, Chromium PDF, bookmarks, EPUB preprocessing, validation.
+- `references/automated-verification.md` — Playwright suite, artifact verifier, visual baselines, and test rules.
 - `references/failure-catalog.md` — symptoms, causes, and fixes distilled from a real publication history.
 - `references/history-and-decisions.md` — commit-level timeline and the decisions behind the current pipeline.
 - `references/acceptance-checklist.md` — the final gate before committing.

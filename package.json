@@ -1,0 +1,15 @@
+{
+  "name": "dialectics-publication",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Functional and visual regression tests for the bilingual book site.",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:update": "playwright test --update-snapshots",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1"
+  }
+}

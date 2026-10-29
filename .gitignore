@@ -17,3 +17,9 @@ venv/
 
 # 字体源文件（体积大；子集化后的 docs/assets/fonts/*.woff2 需要提交）
 docs/assets/fonts/src/
+
+# Node / Playwright（视觉基线 tests/__screenshots__ 需要提交）
+node_modules/
+playwright-report/
+test-results/
+blob-report/

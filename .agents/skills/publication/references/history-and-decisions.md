@@ -56,6 +56,16 @@ This skill was distilled from a 20-commit publication history. The timeline expl
     - The fixed bottom toast was covered by mobile browser toolbars; it became an inline status under the button.
     - Decorative glow pseudo-elements with negative lateral insets caused horizontal scrolling; lateral insets became zero and `overflow-x: clip` was added as a guard.
 
+## Phase 5: automated regression
+
+21. A Playwright suite was added:
+    - Build specs verify artifacts, crawl every internal link/asset, enforce download isolation, compare Markdown copies, and scan for local paths.
+    - Landing specs cover locale detection/persistence, manual switching, downloads, theme auto/manual, AI prompt copy, and horizontal overflow.
+    - Reading specs cover catalog/pager/keyboard navigation, language switching, resume, sidebar scroll, progress, drawer animation, chapter AI, and content rendering.
+    - Visual specs store desktop/mobile and light/dark screenshots.
+22. A Python artifact verifier checks PDF outline/page counts, EPUB mimetype/XML/MathML/`<br>`, Markdown copies, and privacy.
+23. The first run found that the landing theme button had lost its click handler when the AI-copy script was extracted. The regression test asserted the `data-theme` change, so it caught a real user-visible bug.
+
 ## Reusable conclusions
 
 - Parse once, render three times. Separate format pipelines drift.
