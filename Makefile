@@ -27,4 +27,4 @@ clean:          ## 删除生成页面与缓存，保留源文件与 assets
 	$(PY) build.py --clean
 
 check:
-	$(PY) -m py_compile build.py scripts/prepare_fonts.py scripts/pdf_toc.py
+	$(PY) -m py_compile build.py scripts/*.py
