@@ -73,6 +73,9 @@ UI = {
         "guide_marker": "全书结构与章节行动导览",
         "cover": "封面",
         "resume": "继续上次阅读",
+        "ai_read": "✦ AI 帮我读",
+        "ai_copied": "本章提示词已复制，去 AI 对话粘贴即可",
+        "ai_failed": "复制失败，请手动选择提示词复制",
     },
     "en": {
         "skip": "Skip to content",
@@ -107,6 +110,9 @@ UI = {
         "guide_marker": "Master Table of Contents",
         "cover": "Cover",
         "resume": "Continue reading",
+        "ai_read": "✦ Read with AI",
+        "ai_copied": "Chapter prompt copied. Paste it into any AI chat.",
+        "ai_failed": "Copy failed — please copy the prompt manually.",
     },
 }
 
@@ -481,13 +487,24 @@ def part_page_html(part: Part) -> str:
     return f'<article class="part-page">{head}{intro}{listing}</article>'
 
 
-def chapter_page_html(ch: Chapter) -> str:
+def chapter_page_html(ch: Chapter, book: Book, site_url: str) -> str:
     kicker = f'<p class="kicker">{esc(ch.kicker)}</p>' if ch.kicker else ""
     star = '<span class="star" title="★">★</span> ' if ch.starred else ""
     sub = f'<p class="chapter-sub">{esc(ch.subtitle)}</p>' if ch.subtitle else ""
+    url = f"{site_url}/{book.code}/{ch.page}"
+    if book.code == "zh":
+        prompt = (f"帮我解读这本《{book.meta['full_title']}》的这一章内容：\n"
+                  f"《{ch.title}》\n{url}")
+    else:
+        prompt = (f'Help me interpret this chapter from "{book.meta["full_title"]}":\n'
+                  f'"{ch.title}"\n{url}')
+    ai = (f'<div class="ai-read chapter-ai">'
+          f'<button class="btn btn-ai" data-ai-copy data-prompt="{esc(prompt).replace(chr(10), "&#10;")}" '
+          f'data-toast="{esc(book.ui["ai_copied"])}" data-fail="{esc(book.ui["ai_failed"])}">'
+          f'{book.ui["ai_read"]}</button></div>')
     return (f'<article class="chapter">{kicker}'
             f'<header class="chapter-head"><h1>{star}{title_html(ch.title)}</h1>{sub}</header>'
-            f'<div class="prose">{ch.body}</div></article>')
+            f'{ai}<div class="prose">{ch.body}</div></article>')
 
 
 def style_guide_section(fragment: str, marker: str) -> str:
@@ -669,7 +686,7 @@ def build_site(book: Book, cfg: dict, fonts: dict, asset_version: str = "") -> d
             body = part_page_html(item) + pager_html(book, item.slug)
             pages[item.page] = page(item.name or item.label, body, slug=item.slug, cls="part")
         else:
-            body = chapter_page_html(item) + pager_html(book, item.slug)
+            body = chapter_page_html(item, book, site_url) + pager_html(book, item.slug)
             pages[item.page] = page(item.full_title, body, slug=item.slug,
                                    desc=chapter_description(item), cls="chapter")
     return pages
