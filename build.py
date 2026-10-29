@@ -385,6 +385,22 @@ def chapter_page_html(ch: Chapter) -> str:
             f'<div class="prose">{ch.body}</div></article>')
 
 
+def style_guide_section(fragment: str) -> str:
+    """把前言导览里的「标题 + 一句说明」排成两行，说明用浅色小字。"""
+    marker = re.search(r'<h3 id="[^"]*全书结构与章节行动导览[^"]*"[^>]*>', fragment)
+    if not marker:
+        return fragment
+    head, tail = fragment[:marker.start()], fragment[marker.start():]
+    # 章节项以 </li> 结尾；部分项后面还跟着嵌套的 <ul>，两种都要处理
+    tail = re.sub(
+        r'<li><strong>(.*?)</strong>\s*([^<]+?)(?=\s*(?:<ul>|</li>))',
+        r'<li class="guide-item"><strong>\1</strong>'
+        r'<span class="guide-desc">\2</span>',
+        tail, flags=re.S,
+    )
+    return head + tail
+
+
 def extract_sections(fragment: str) -> list[tuple[str, str]]:
     """取出一章里的三级标题，用于 PDF 书签的第二层。"""
     out: list[tuple[str, str]] = []
@@ -445,6 +461,9 @@ def build_site(book: Book, cfg: dict, pandoc: str, fonts: dict[int, Path]) -> di
     pdf_name = cfg["site"]["pdf_name"]
     epub_name = cfg["site"].get("epub_name", "dialectics.epub")
     author = meta.get("author", "").strip()
+    homepage = meta.get("homepage", "").strip()
+    author_html = (f'<a href="{homepage}">{esc(author)}</a>'
+                   if author and homepage else esc(author))
     license_name = meta.get("license", "")
     license_url = meta.get("license_url", "")
     license_note = meta.get("license_note", "")
@@ -471,7 +490,7 @@ def build_site(book: Book, cfg: dict, pandoc: str, fonts: dict[int, Path]) -> di
             body_class=f"page-{cls}" if cls else "page-chapter",
             pdf_href=pdf_name,
             epub_href=epub_name,
-            author=f"{esc(author)} · " if author else "",
+            author=f"{author_html} · " if author else "",
             year=str(datetime.now().year),
             license=esc(license_name),
             license_url=license_url,
@@ -485,7 +504,7 @@ def build_site(book: Book, cfg: dict, pandoc: str, fonts: dict[int, Path]) -> di
     # 封面 + 目录
     first = book.flow[0] if book.flow else None
     first_href = getattr(first, "page", "index.html") if first else "index.html"
-    author_line = f'<p class="hero-author">{esc(author)}</p>' if author else ""
+    author_line = f'<p class="hero-author">{author_html}</p>' if author else ""
     home = f"""<article class="home">
   <section class="hero">
     <div class="hero-inner">
@@ -786,6 +805,24 @@ def epub_markdown(source: Path) -> tuple[str, set[str]]:
         text, flags=re.M,
     )
 
+    # 前言导览列表：标题加粗，说明另起一行用浅色小字
+    lines, styled, inside = [], [], False
+    for line in text.split("\n"):
+        if line.startswith("### ") and "全书结构与章节行动导览" in line:
+            inside = True
+        elif inside and (line.startswith("### ") or line.startswith("## ")
+                         or line.startswith("# ") or line.strip() == "---"):
+            inside = False
+        match = re.match(r"^(\s*)\* \*\*(.+?)\*\* (\S.*)$", line) if inside else None
+        if match:
+            styled.append(
+                f'{match.group(1)}* **{match.group(2)}**<br />'
+                f'<span class="guide-desc">{match.group(3)}</span>'
+            )
+            continue
+        styled.append(line)
+    text = "\n".join(styled)
+
     unknown: set[str] = set()
     pattern = re.compile(r"(`[^`\n]*`)|(\$\$[^$\n]+\$\$)|(\$[^$\n]+\$)")
 
@@ -923,7 +960,7 @@ def main() -> int:
     for part in book.parts:
         part.intro = pandoc_md_to_html(pandoc, part.intro_md)
     for chapter in book.chapters:
-        chapter.body = pandoc_md_to_html(pandoc, chapter.body_md)
+        chapter.body = style_guide_section(pandoc_md_to_html(pandoc, chapter.body_md))
         chapter.sections = extract_sections(chapter.body)
         if not chapter.body:
             log(f"警告：{chapter.title} 没有正文")

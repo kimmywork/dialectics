@@ -50,6 +50,7 @@ docs/assets/css/epub.css  EPUB 阅读样式
 docs/assets/js/app.js     主题、抽屉目录、进度条、续读、键盘翻页
 docs/assets/fonts/        子集化后的 Noto Serif SC（随仓库提交）
 docs/dialectics.md        正文源文件
+LICENSE.md                许可协议全文
 ```
 
 ## 改内容 / 改版式

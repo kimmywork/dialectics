@@ -302,6 +302,17 @@ body { overflow-wrap: break-word; }
   color: var(--ink-soft);
 }
 
+/* 前言里的全书导览：说明文字另起一行 */
+.guide-desc {
+  display: block;
+  margin-top: .15em;
+  font-size: .85em;
+  line-height: 1.6;
+  color: var(--ink-faint);
+}
+
+.prose .guide-item { margin: .55em 0; }
+
 /* ---------------- 部分首页 ---------------- */
 
 .part-page { padding-top: .5rem; }
@@ -461,6 +472,8 @@ body { overflow-wrap: break-word; }
   letter-spacing: .2em;
   color: var(--ink-faint);
 }
+.hero-author a { color: inherit; border-bottom: 1px solid transparent; }
+.hero-author a:hover { color: var(--accent); border-bottom-color: currentColor; }
 
 .hero-desc {
   max-width: 32rem;

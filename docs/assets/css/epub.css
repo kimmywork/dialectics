@@ -50,6 +50,15 @@ p {
   text-indent: 0;
 }
 
+.guide-desc {
+  display: block;
+  margin-top: .1em;
+  font-size: .82em;
+  line-height: 1.5;
+  color: #7a7266;
+  text-indent: 0;
+}
+
 li p,
 blockquote p,
 td p {

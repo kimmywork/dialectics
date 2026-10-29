@@ -426,6 +426,14 @@ body.print {
   color: #6b6459;
 }
 
+.print .guide-desc {
+  display: block;
+  margin-top: 1mm;
+  font-size: 8.8pt;
+  line-height: 1.5;
+  color: #7a7266;
+}
+
 .print .prose p {
   margin: 0 0 .22em;
   text-indent: 2em;
