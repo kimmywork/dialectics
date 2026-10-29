@@ -581,6 +581,10 @@ def build_site(book: Book, cfg: dict, fonts: dict, asset_version: str = "") -> d
     pdf_name = "dialectics.pdf"
     epub_name = "dialectics.epub"
     other = "en" if book.code == "zh" else "zh"
+    site_url = cfg["site"]["url"].rstrip("/")
+    og_locale = "zh_CN" if book.code == "zh" else "en_US"
+    og_locale_alt = "en_US" if book.code == "zh" else "zh_CN"
+    og_image = f"{site_url}/assets/share/{book.code}.png"
 
     font_preload = ""
     if fonts.get("newsreader", {}).get((400, "normal")):
@@ -590,6 +594,8 @@ def build_site(book: Book, cfg: dict, fonts: dict, asset_version: str = "") -> d
 
     def page(title: str, body: str, *, slug: str, desc: str = "", cls: str = "") -> str:
         fname = "index.html" if slug == "index" else f"{slug}.html"
+        og_title = title or full_title
+        og_desc = desc or description
         return render(
             layout,
             lang=book.lang,
@@ -599,6 +605,13 @@ def build_site(book: Book, cfg: dict, fonts: dict, asset_version: str = "") -> d
             short_title=esc(meta["title"]),
             subtitle=esc(meta["subtitle"]),
             description=esc(desc or description),
+            og_title=esc(og_title),
+            og_description=esc(og_desc),
+            og_url=f"{site_url}/{book.code}/{fname}",
+            og_image=og_image,
+            og_type="article" if cls == "chapter" else "website",
+            og_locale=og_locale,
+            og_locale_alt=og_locale_alt,
             font_preload=font_preload,
             font_cdn=font_cdn,
             nav=nav_html(book, slug),
@@ -686,6 +699,8 @@ def build_landing(books: list[Book], cfg: dict, fonts: dict, asset_version: str 
         assets="assets",
         asset_version=asset_version,
         font_cdn=font_cdn_html(cfg),
+        site_url=cfg["site"]["url"].rstrip("/"),
+        og_description="《走出二选一：大众辩证思维手册》与英文版 Beyond Either/Or 的双语入口。",
         zh_block=blocks.get("zh", ""),
         en_block=blocks.get("en", ""),
         author=esc(cfg["editions"][cfg["site"]["default"]]["author"]),
@@ -944,6 +959,92 @@ h1{{font-size:{'96px' if len(meta['title']) > 14 else '106px'};letter-spacing:.0
     return out if out.is_file() and out.stat().st_size > 10_000 else None
 
 
+def build_share_card(title: str, subtitle: str, kicker: str, lang: str,
+                     out: Path, *, bilingual: bool = False) -> bool:
+    """生成 800×800 的分享缩略图（微信聊天 / 朋友圈卡片）。"""
+    chrome = find_chrome()
+    if not chrome:
+        return False
+
+    noto = BUILD / "fonts" / "noto-serif-sc-400.woff2"
+    news = ASSETS / "fonts" / "newsreader-400.woff2"
+    faces = []
+    if noto.is_file():
+        faces.append(f'@font-face{{font-family:"Noto Serif SC";'
+                     f'src:url("file://{noto.resolve()}") format("woff2");font-weight:400}}')
+    if news.is_file():
+        faces.append(f'@font-face{{font-family:"Newsreader";'
+                     f'src:url("file://{news.resolve()}") format("woff2");font-weight:400}}')
+    face_css = "\n".join(faces)
+
+    if bilingual:
+        title_html = ('<span class="zh">走出二选一</span>'
+                      '<span class="en">Beyond Either/Or</span>')
+        title_size = "48px"
+    else:
+        title_html = esc(title)
+        title_size = "62px" if lang.startswith("zh") else "44px"
+
+    document = f"""<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><style>
+{face_css}
+html,body{{margin:0;width:800px;height:800px;background:#f0e7d8;
+  font-family:"Newsreader","Noto Serif SC","Songti SC",serif;color:#241f18}}
+.card{{position:absolute;inset:34px;border:1px solid rgba(156,59,36,.32);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px 44px}}
+.kicker{{margin:0 0 26px;font-size:13px;letter-spacing:.32em;text-indent:.32em;color:#9c3b24}}
+h1{{margin:0;font-size:{title_size};line-height:1.22;letter-spacing:.04em}}
+h1 .zh,h1 .en{{display:block}}
+h1 .en{{font-size:40px;margin-top:10px;letter-spacing:.02em}}
+.rule{{width:46px;height:3px;background:#9c3b24;margin:22px 0 18px}}
+.sub{{margin:0;font-size:20px;line-height:1.5;color:#5d5346;letter-spacing:.06em;max-width:620px}}
+.author{{margin:16px 0 0;font-size:15px;letter-spacing:.16em;color:#8c8477}}
+.seal{{margin-top:26px;width:58px;height:58px;border-radius:3px;background:#9c3b24;
+  color:#f7efe2;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:18px;line-height:1.08}}
+.foot{{position:absolute;left:0;right:0;bottom:22px;margin:0;
+  font-size:12px;letter-spacing:.14em;color:#8c8477}}
+</style></head><body><div class="card">
+  <p class="kicker">{esc(kicker)}</p>
+  <h1>{title_html}</h1>
+  <div class="rule"></div>
+  <p class="sub">{esc(subtitle)}</p>
+  <p class="author">Kimmy</p>
+  <div class="seal"><span>辩</span><span>证</span></div>
+  <p class="foot">dialectics.kimleo.net</p>
+</div></body></html>"""
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    page = BUILD / f"share-{out.stem}.html"
+    page.write_text(document, encoding="utf-8")
+    with tempfile.TemporaryDirectory(prefix="share-profile-") as profile:
+        subprocess.run(
+            [chrome, "--headless", "--disable-gpu", "--hide-scrollbars",
+             "--allow-file-access-from-files", "--force-device-scale-factor=1",
+             "--window-size=800,800", f"--user-data-dir={profile}",
+             f"--screenshot={out.resolve()}", page.resolve().as_uri()],
+            capture_output=True, text=True,
+        )
+    return out.is_file() and out.stat().st_size > 5_000
+
+
+def build_share_cards(books: list[Book]) -> None:
+    out_dir = ASSETS / "share"
+    for book in books:
+        meta = book.meta
+        ok = build_share_card(
+            meta["title"], meta["subtitle"], book.ui["hero_kicker"],
+            book.lang, out_dir / f"{book.code}.png",
+        )
+        if ok:
+            log(f"分享卡片：docs/assets/share/{book.code}.png")
+    build_share_card(
+        "走出二选一", "A Practical Handbook of Dialectical Thinking",
+        "辩证思维手册 · A Practical Handbook", "zh",
+        out_dir / "index.png", bilingual=True,
+    )
+
+
 def epub_markdown(source: Path, ui: dict, lang: str) -> tuple[str, set[str]]:
     sys.path.insert(0, str(ROOT / "scripts"))
     import latex_text  # noqa: PLC0415
@@ -1181,6 +1282,7 @@ def main() -> int:
     if not fonts:
         log("提示：没有可用字体文件，网页与 PDF 会回退到系统衬线字体")
 
+    build_share_cards(books)
     pages = {book.code: build_site(book, cfg, fonts, asset_version) for book in books}
     landing = build_landing(books, cfg, fonts, asset_version)
 

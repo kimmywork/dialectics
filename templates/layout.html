@@ -6,10 +6,23 @@
 <title>{{title}}</title>
 <meta name="description" content="{{description}}">
 <meta name="color-scheme" content="light dark">
-<meta property="og:type" content="book">
+<meta property="og:type" content="{{og_type}}">
 <meta property="og:site_name" content="{{book_title}}">
-<meta property="og:title" content="{{title}}">
-<meta property="og:description" content="{{description}}">
+<meta property="og:title" content="{{og_title}}">
+<meta property="og:description" content="{{og_description}}">
+<meta property="og:url" content="{{og_url}}">
+<meta property="og:image" content="{{og_image}}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="800">
+<meta property="og:image:height" content="800">
+<meta property="og:locale" content="{{og_locale}}">
+<meta property="og:locale:alternate" content="{{og_locale_alt}}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{og_title}}">
+<meta name="twitter:description" content="{{og_description}}">
+<meta name="twitter:image" content="{{og_image}}">
+<link rel="canonical" href="{{og_url}}">
+<link rel="image_src" href="{{og_image}}">
 {{font_preload}}
 <link rel="stylesheet" href="{{asset_prefix}}assets/css/base.css?v={{asset_version}}">
 <link rel="stylesheet" href="{{asset_prefix}}assets/css/web.css?v={{asset_version}}">
@@ -24,6 +37,7 @@
 </script>
 </head>
 <body class="{{body_class}}">
+<img class="share-thumb" src="{{og_image}}" width="300" height="300" alt="" aria-hidden="true">
 <a class="skip-link" href="#main">{{skip}}</a>
 <div class="read-progress" aria-hidden="true"><span id="progress-bar"></span></div>
 

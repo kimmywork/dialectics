@@ -108,6 +108,14 @@ a:hover { color: var(--accent-soft); }
 
 img, svg, video { max-width: 100%; height: auto; }
 
+.share-thumb {
+  position: absolute;
+  left: -10000px;
+  top: 0;
+  width: 300px;
+  height: 300px;
+}
+
 .skip-link {
   position: absolute;
   left: -999px;
