@@ -761,22 +761,52 @@ h1{{font-size:106px;letter-spacing:.1em;text-indent:.1em;margin:0;line-height:1.
     return out if out.is_file() and out.stat().st_size > 10_000 else None
 
 
-def build_epub(book: Book, cfg: dict, pandoc: str, cover: Path | None, target: Path) -> None:
-    meta = cfg["book"]
-    source = ROOT / meta["source"]
-    # 源码里保留 [进阶深潜] 字面标签，EPUB 里换成小徽标
-    text = source.read_text(encoding="utf-8").replace(
-        "[进阶深潜]", '<span class="tag-advanced">进阶深潜</span>'
-    )
-    # EPUB 是 XHTML，原始 HTML 里的 <br> 必须写成自闭合，否则 Books 会报标签未闭合
+def epub_markdown(source: Path) -> tuple[str, set[str]]:
+    """把正文改写成适合 EPUB 阅读器的 Markdown。
+
+    微信读书等阅读器不渲染 MathML，也不支持部分 HTML 写法，因此这里：
+    · 把 LaTeX 转成 Unicode 纯文本（跳过代码片段里的 $）
+    · 标题里的 [进阶深潜] 换成小徽标，代码里的保持原样
+    · 把 <br> 自闭合，避免 XHTML 校验失败
+    · 章节标题的（副标题）拆成下一行
+    """
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import latex_text  # noqa: PLC0415
+
+    text = source.read_text(encoding="utf-8")
     text = re.sub(r"<br\s*/?>", "<br />", text, flags=re.I)
-    # 章节标题末尾的「（副标题）」拆成下一行的小字，和网页/PDF 的层次保持一致
+    text = re.sub(
+        r"^(#{2,6}\s+)\[进阶深潜\]",
+        r'\1<span class="tag-advanced">进阶深潜</span>',
+        text, flags=re.M,
+    )
     text = re.sub(
         r"^(##\s+)(.*?)（([^（）]*)）\s*$",
         lambda m: f'{m.group(1)}{m.group(2)}\n\n<p class="chapter-sub">{m.group(3)}</p>',
         text, flags=re.M,
     )
+
+    unknown: set[str] = set()
+    pattern = re.compile(r"(`[^`\n]*`)|(\$\$[^$\n]+\$\$)|(\$[^$\n]+\$)")
+
+    def repl(match: re.Match[str]) -> str:
+        if match.group(1):
+            return match.group(1)
+        if match.group(2):
+            return latex_text.to_html(match.group(2)[2:-2], display=True, report=unknown)
+        return latex_text.to_html(match.group(3)[1:-1], report=unknown)
+
+    text = pattern.sub(repl, text)
+    return text, unknown
+
+
+def build_epub(book: Book, cfg: dict, pandoc: str, cover: Path | None, target: Path) -> None:
+    meta = cfg["book"]
+    source = ROOT / meta["source"]
     BUILD.mkdir(exist_ok=True)
+    text, unknown = epub_markdown(source)
+    if unknown:
+        log(f"提示：EPUB 里有未识别的 LaTeX 命令，已按字面输出：{'、'.join(sorted(unknown))}")
     staging = BUILD / "epub.md"
     staging.write_text(text, encoding="utf-8")
 
@@ -784,7 +814,6 @@ def build_epub(book: Book, cfg: dict, pandoc: str, cover: Path | None, target: P
         pandoc,
         "--from=markdown+smart+lists_without_preceding_blankline",
         "--to=epub3",
-        "--mathml",
         "--toc", "--toc-depth=2", "--split-level=1",
         "--metadata", f"title={meta['full_title']}",
         "--metadata", f"author={meta['author']}",

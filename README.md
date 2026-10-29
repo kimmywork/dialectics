@@ -40,6 +40,7 @@ book.toml                 书名、副标题、描述、源文件路径等
 build.py                  构建入口：解析 → pandoc → 网页 → PDF → 书签
 scripts/prepare_fonts.py  查找系统字体并按用字子集化为 woff2
 scripts/pdf_toc.py        按标题定位页码并写入 PDF 书签
+scripts/latex_text.py     公式转 Unicode 纯文本（EPUB 用）
 templates/layout.html     网页外壳
 templates/print.html      PDF 外壳
 docs/assets/css/base.css  共用排版与配色变量
@@ -86,6 +87,6 @@ docs/dialectics.md        正文源文件
 - **pandoc** 负责 Markdown → HTML，数学公式输出为 **MathML**，网页和 PDF 都不依赖 MathJax/KaTeX 运行时。
 - **Chromium** 的 print-to-pdf 负责 PDF：CSS `@page` 命名页 + 边距框实现封面底色、部分扉页不显示页码、正文页眉与页码。
 - **pypdf** 在打印完成后补写阅读器侧边栏的嵌套书签（部分 → 章节 → 小节）。印在书页里的目录保持干净，不排页码。
-- **EPUB** 由 pandoc 直接输出，自动生成封面 PNG、可点击目录与 MathML 公式。
+- **EPUB** 由 pandoc 输出，自动生成封面 PNG 和可点击目录。微信读书等阅读器不渲染 MathML，所以公式在打包前会转成 Unicode 纯文本（`\frac{a}{b}` → `a/b`，上下标、希腊字母与箭头都保留），代码里的 `<br>`、`[进阶深潜]` 也会做 XHTML 兼容处理。
 - **构建顺序**：解析 → 渲染 → 统计用字 → 子集字体 → 写出页面 → 生成打印页 → 打印 PDF → 写入书签 → 打包 EPUB。
 - 站点无第三方 JS/CSS 依赖，离线可读（字体随站点分发）。
