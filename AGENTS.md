@@ -42,7 +42,8 @@ Never hand-edit generated files. Change sources, assets, config, or templates, t
 
 - **Chinese web fonts come from a CDN.** Pages load Fontsource's unicode-range chunks (`book.toml` → `[fonts] chinese_cdn`), 400 weight only by default (`web_bold = false`); bold is synthesized. Do not commit CJK font files to `docs/`.
 - **PDF fonts are generated locally.** `prepare_fonts` writes Noto 400/700 subsets to `build/fonts/` (ignored); they are embedded into the PDF. Static instances are mandatory: variable fonts make Chromium emit Type3 glyphs and inflate PDFs to about 24 MB.
-- **English fonts are committed.** Newsreader (400/700/400 italic, about 100 KB) is used by web and PDF and embedded into the English EPUB.
+- **English fonts are committed.** Newsreader (400/700/400 italic, about 100 KB) is used by web and PDF and embedded into both EPUBs.
+- **Mixed-script stack is `"Newsreader", "Noto Serif SC", …`** for Chinese too: Latin/digits use Newsreader, CJK falls back to the CDN Noto chunks. Chinese pages preload Newsreader.
 - **Currency dollars.** English prose must escape money as `\$`. The EPUB math converter only matches unescaped `$...$`; do not remove the negative lookbehind or prose will be wrapped into formulas.
 - **Cover sizing.** The cover uses absolute `inset` inside a fixed-height page; `height: 100%` plus margins created a blank second page.
 - **PDF bookmarks need page numbers.** Chromium writes named destinations only for linked anchors. Parts/chapters resolve from those; sections (`h3`) use line-start text search in `scripts/pdf_toc.py`. Advance the cursor for named entries or the preface guide page matches first.

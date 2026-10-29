@@ -20,7 +20,7 @@
 :root {
   /* 打印时统一使用嵌入的衬线字体，保证中英文与页码都有字形 */
   --sans: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
-  --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
+  --serif: "Newsreader", "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
 }
 
 html[lang="en"] {

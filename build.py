@@ -68,7 +68,7 @@ UI = {
         "stats_parts": "个部分",
         "stats_chapters": "章",
         "stats_words": "万字",
-        "typeface": "Noto Serif SC",
+        "typeface": "Newsreader / Noto Serif SC",
         "deep_dive": "进阶深潜",
         "guide_marker": "全书结构与章节行动导览",
         "cover": "封面",
@@ -583,7 +583,7 @@ def build_site(book: Book, cfg: dict, fonts: dict, asset_version: str = "") -> d
     other = "en" if book.code == "zh" else "zh"
 
     font_preload = ""
-    if book.code == "en" and fonts.get("newsreader", {}).get((400, "normal")):
+    if fonts.get("newsreader", {}).get((400, "normal")):
         font_preload = ('<link rel="preload" href="../assets/fonts/newsreader-400.woff2" '
                         'as="font" type="font/woff2" crossorigin>')
     font_cdn = font_cdn_html(cfg) if book.code == "zh" else ""
@@ -1021,11 +1021,10 @@ def build_epub(book: Book, cfg: dict, pandoc: str, cover: Path | None, target: P
     ]
     if cover:
         cmd += ["--epub-cover-image", str(cover)]
-    if book.code == "en":
-        for name in ("newsreader-400.woff2", "newsreader-700.woff2", "newsreader-400-italic.woff2"):
-            font = ASSETS / "fonts" / name
-            if font.is_file():
-                cmd += ["--epub-embed-font", str(font)]
+    for name in ("newsreader-400.woff2", "newsreader-700.woff2", "newsreader-400-italic.woff2"):
+        font = ASSETS / "fonts" / name
+        if font.is_file():
+            cmd += ["--epub-embed-font", str(font)]
     cmd += ["--output", str(target), str(staging)]
 
     proc = subprocess.run(cmd, capture_output=True, text=True)
