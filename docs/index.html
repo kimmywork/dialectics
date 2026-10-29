@@ -25,12 +25,14 @@
 <link rel="image_src" href="https://dialectics.kimleo.net/assets/share/index.png">
 <link rel="alternate" hreflang="zh" href="zh/index.html">
 <link rel="alternate" hreflang="en" href="en/index.html">
+<link rel="alternate" type="text/markdown" hreflang="zh" href="zh/dialectics.md">
+<link rel="alternate" type="text/markdown" hreflang="en" href="en/dialectics.md">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/400.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/700.css">
-<link rel="stylesheet" href="assets/css/base.css?v=1793255558">
-<link rel="stylesheet" href="assets/css/web.css?v=1793255558">
-<link rel="stylesheet" href="assets/css/landing.css?v=1793255558">
+<link rel="stylesheet" href="assets/css/base.css?v=1793257295">
+<link rel="stylesheet" href="assets/css/web.css?v=1793257295">
+<link rel="stylesheet" href="assets/css/landing.css?v=1793257295">
 <script>
 (function () {
   var lang = "";
@@ -75,6 +77,11 @@
     <a class="btn" href="zh/dialectics.pdf">PDF</a>
     <a class="btn" href="zh/dialectics.epub">ePub</a>
   </div>
+  <div class="ai-read">
+    <button class="btn btn-ai" data-ai-copy data-prompt="帮我解读这本 [《走出二选一：大众辩证思维手册》](https://dialectics.kimleo.net/zh/dialectics.md)，可以使用附录 C 中提及的“辩证阅读法”，或者其他适合结构化解读这本书的方法。"
+            data-toast="提示词已复制，去任意 AI 对话粘贴即可" data-fail="复制失败，请手动选择提示词复制">✦ AI 帮我读</button>
+    <span class="ai-hint">复制提示词 · 在 AI 对话中粘贴 · <a href="zh/dialectics.md">Markdown 原文</a></span>
+  </div>
 </section>
 <section class="edition" data-lang-block="en" lang="en">
   <p class="edition-kicker">A Practical Handbook</p>
@@ -88,14 +95,21 @@
     <a class="btn" href="en/dialectics.pdf">PDF</a>
     <a class="btn" href="en/dialectics.epub">ePub</a>
   </div>
+  <div class="ai-read">
+    <button class="btn btn-ai" data-ai-copy data-prompt="Help me interpret [Beyond Either/Or: A Practical Handbook of Dialectical Thinking](https://dialectics.kimleo.net/en/dialectics.md). You can use the &quot;Four-Step Dialectical Book-Dissection Method&quot; mentioned in Appendix C, or any other structured approach that suits this book."
+            data-toast="Prompt copied. Paste it into any AI chat." data-fail="Copy failed — please copy the prompt manually.">✦ Read with AI</button>
+    <span class="ai-hint">Copies a prompt · paste it into any AI chat · <a href="en/dialectics.md">Markdown source</a></span>
+  </div>
 </section>
 </main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <footer class="landing-foot">
   <p>Kimmy · 2026 · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p>
   <p><a href="https://github.com/kimmywork/dialectics">GitHub</a></p>
 </footer>
 
-<script src="assets/js/landing.js?v=1793255558"></script>
+<script src="assets/js/landing.js?v=1793257295"></script>
 </body>
 </html>

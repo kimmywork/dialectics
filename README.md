@@ -63,6 +63,7 @@ LICENSE.md                许可协议全文
 - 落地页在 `docs/index.html`：读取 `localStorage` 中保存的语言偏好，否则按 `navigator.language` 选择中文或英文；右上角可手动切换，选择会记住。
 - 两个阅读站的页头、侧栏都有语言切换链接（`English` / `中文`），互相跳转到对方的首页。
 - **PDF / EPUB 下载只在落地页**。阅读首页与侧栏不再放出下载按钮，避免阅读页出现与当前语言不一致的文件。
+- 落地页有 **「AI 帮我读」**：点击复制一段提示词（指向对应语言的 Markdown 原文与附录 C 的阅读法），粘贴到任意 AI 对话即可。构建时会把源稿复制为 `docs/zh/dialectics.md` 与 `docs/en/dialectics.md`，供 AI 直接抓取。
 - 新增一个语言版本：在 `book.toml` 增加一个 `[editions.xx]`，放入对应源文件，重新 `make`。输出目录、导航、字体与书签会按 `code` 自动生成。
 
 ## 改写正文的约定

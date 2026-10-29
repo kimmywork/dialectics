@@ -677,10 +677,25 @@ def build_site(book: Book, cfg: dict, fonts: dict, asset_version: str = "") -> d
 
 def build_landing(books: list[Book], cfg: dict, fonts: dict, asset_version: str = "") -> str:
     template = (ROOT / "templates" / "landing.html").read_text(encoding="utf-8")
+    site = cfg["site"]["url"].rstrip("/")
+    prompts = {
+        "zh": (f"帮我解读这本 [《走出二选一：大众辩证思维手册》]({site}/zh/dialectics.md)，"
+               "可以使用附录 C 中提及的“辩证阅读法”，或者其他适合结构化解读这本书的方法。"),
+        "en": (f"Help me interpret [Beyond Either/Or: A Practical Handbook of Dialectical Thinking]"
+               f"({site}/en/dialectics.md). You can use the \"Four-Step Dialectical Book-Dissection Method\" "
+               "mentioned in Appendix C, or any other structured approach that suits this book."),
+    }
+    ai_labels = {
+        "zh": ("✦ AI 帮我读", '复制提示词 · 在 AI 对话中粘贴 · <a href="zh/dialectics.md">Markdown 原文</a>',
+               "提示词已复制，去任意 AI 对话粘贴即可", "复制失败，请手动选择提示词复制"),
+        "en": ("✦ Read with AI", 'Copies a prompt · paste it into any AI chat · <a href="en/dialectics.md">Markdown source</a>',
+               "Prompt copied. Paste it into any AI chat.", "Copy failed — please copy the prompt manually."),
+    }
     blocks = {}
     for book in books:
         meta = book.meta
         ui = book.ui
+        ai_label, ai_hint, ai_toast, ai_fail = ai_labels[book.code]
         blocks[book.code] = f"""<section class="edition" data-lang-block="{book.code}" lang="{book.lang}">
   <p class="edition-kicker">{ui["hero_kicker"]}</p>
   <h1 class="edition-title">{esc(meta["title"])}</h1>
@@ -693,13 +708,18 @@ def build_landing(books: list[Book], cfg: dict, fonts: dict, asset_version: str 
     <a class="btn" href="{book.code}/dialectics.pdf">{ui["pdf"]}</a>
     <a class="btn" href="{book.code}/dialectics.epub">{ui["epub"]}</a>
   </div>
+  <div class="ai-read">
+    <button class="btn btn-ai" data-ai-copy data-prompt="{esc(prompts[book.code])}"
+            data-toast="{esc(ai_toast)}" data-fail="{esc(ai_fail)}">{ai_label}</button>
+    <span class="ai-hint">{ai_hint}</span>
+  </div>
 </section>"""
     return render(
         template,
         assets="assets",
         asset_version=asset_version,
         font_cdn=font_cdn_html(cfg),
-        site_url=cfg["site"]["url"].rstrip("/"),
+        site_url=site,
         og_description="《走出二选一：大众辩证思维手册》与英文版 Beyond Either/Or 的双语入口。",
         zh_block=blocks.get("zh", ""),
         en_block=blocks.get("en", ""),
@@ -1200,7 +1220,7 @@ def clean_outputs(cfg: dict) -> int:
         for old in folder.glob("*.html"):
             old.unlink()
             removed += 1
-        for name in ("dialectics.pdf", "dialectics.epub"):
+        for name in ("dialectics.pdf", "dialectics.epub", "dialectics.md"):
             path = folder / name
             if path.exists():
                 path.unlink()
@@ -1298,6 +1318,12 @@ def main() -> int:
     for legacy in ("dialectics.pdf", "dialectics.epub"):
         (SITE / legacy).unlink(missing_ok=True)
     (SITE / "index.html").write_text(landing, encoding="utf-8")
+
+    # AI 可直接抓取的 Markdown 原文
+    for code, name in (("zh", "dialectics.md"), ("en", "dialectics_en.md")):
+        src = MARKDOWN / name
+        if src.is_file():
+            shutil.copyfile(src, SITE / code / "dialectics.md")
     log(f"docs/ 共 {sum(len(p) for p in pages.values()) + 1} 个页面")
 
     toc_tool = load_pdf_toc()
