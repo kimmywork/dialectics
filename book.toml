@@ -44,6 +44,10 @@ keywords = "dialectical thinking, critical thinking, contradiction, paradox"
 
 [fonts]
 family = "Noto Serif SC"
+# 中文正文字体走 CDN（Fontsource 的 unicode-range 分包），不把字体放进仓库
+chinese_cdn = "https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5"
+# 网页只加载 400（标题用合成粗体），省掉约 1 MB 的 700 分包
+web_bold = false
 source = ""
 # 可选：显式指定英文正文字体；留空则自动查找系统的 Newsreader
 newsreader_source = ""

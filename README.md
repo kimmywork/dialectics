@@ -78,12 +78,12 @@ LICENSE.md                许可协议全文
 
 ## 字体
 
-- 中文正文：**Noto Serif SC**，子集化为 Regular / Bold 两个静态字重。
-- 英文正文：**Newsreader**，子集化为 Regular / Bold / Italic 三个静态字重，PDF 与 EPUB 内嵌；英文页面优先加载 Newsreader，中文引文回退到 Noto。
+- **中文 Web**：通过 **Fontsource CDN**（jsDelivr）加载 Noto Serif SC。CSS 按 `unicode-range` 拆成上百个分包，浏览器只下载当前页面用到的块；网页只加载 400 字重，标题与加粗用合成粗体，首屏约 1.2 MB（含 CSS），后续页面直接命中缓存。仓库里不存放中文字体。
+- **中文 PDF**：构建时从系统 Noto Serif SC 生成 400/700 子集到 `build/fonts/`（不入库），嵌入 PDF。换机器构建需要本机安装 Noto Serif SC。
+- **英文**：Newsreader 的 Regular / Bold / Italic 子集（约 100 KB）随仓库提交，供网页、PDF 与 EPUB 共用；EPUB 内嵌该字体。
+- CDN 地址在 `book.toml` 的 `[fonts] chinese_cdn`；`web_bold = false` 控制网页是否额外加载 700 分包（打开会多约 1 MB）。
 
-字体查找顺序：`book.toml` 指定文件 → `docs/assets/fonts/src/` → 系统字体目录 → `fc-match` → 沿用仓库里已提交的子集。子集由 fontTools 生成，采用 SIL Open Font License。
-
-必须实例化成静态字重：Chromium 的 PDF 后端无法嵌入可变字体，会把字形降级成 Type3 路径，PDF 会从几 MB 膨胀到二十多 MB。
+字体查找顺序：`book.toml` 指定文件 → `docs/assets/fonts/src/` → 系统字体目录 → `fc-match`。PDF 字体必须实例化成静态字重：Chromium 的 PDF 后端无法嵌入可变字体，会把字形降级成 Type3 路径，PDF 会从几 MB 膨胀到二十多 MB。
 
 ## 发布到 GitHub Pages
 
@@ -101,7 +101,7 @@ LICENSE.md                许可协议全文
 - **pypdf** 补写阅读器侧边栏书签（部分 → 章节 → 小节）；书页目录保持干净、不排页码。
 - **EPUB** 由 pandoc 输出；微信读书等阅读器不渲染 MathML，公式在打包前转成 Unicode 文本。
 - **落地页**是纯静态 HTML + 一小段 JS，语言选择立即生效并持久化，无需后端。
-- 站点无第三方 JS/CSS 依赖，离线可读（字体随站点分发）。
+- 站点无第三方 JS 依赖；中文字体走 jsDelivr CDN（Fontsource 分包），英文与 PDF 字体本地生成或内嵌。
 
 ## 维护检查
 

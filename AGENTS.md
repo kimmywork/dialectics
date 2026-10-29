@@ -40,8 +40,9 @@ Never hand-edit generated files. Change sources, assets, config, or templates, t
 
 ## Non-obvious constraints
 
-- **Static font instances.** Chinese uses Noto Serif SC, English uses Newsreader; both are instantiated at 400/700 (plus Newsreader italic) before subsetting. Variable fonts make Chromium emit Type3 glyph fonts and inflate PDFs to about 24 MB.
-- **EPUB embeds Newsreader** (English only) under `EPUB/fonts/`; CSS references `../fonts/...`.
+- **Chinese web fonts come from a CDN.** Pages load Fontsource's unicode-range chunks (`book.toml` → `[fonts] chinese_cdn`), 400 weight only by default (`web_bold = false`); bold is synthesized. Do not commit CJK font files to `docs/`.
+- **PDF fonts are generated locally.** `prepare_fonts` writes Noto 400/700 subsets to `build/fonts/` (ignored); they are embedded into the PDF. Static instances are mandatory: variable fonts make Chromium emit Type3 glyphs and inflate PDFs to about 24 MB.
+- **English fonts are committed.** Newsreader (400/700/400 italic, about 100 KB) is used by web and PDF and embedded into the English EPUB.
 - **Currency dollars.** English prose must escape money as `\$`. The EPUB math converter only matches unescaped `$...$`; do not remove the negative lookbehind or prose will be wrapped into formulas.
 - **Cover sizing.** The cover uses absolute `inset` inside a fixed-height page; `height: 100%` plus margins created a blank second page.
 - **PDF bookmarks need page numbers.** Chromium writes named destinations only for linked anchors. Parts/chapters resolve from those; sections (`h3`) use line-start text search in `scripts/pdf_toc.py`. Advance the cursor for named entries or the preface guide page matches first.
@@ -57,7 +58,7 @@ Before committing:
 1. `make check` and `make` complete.
 2. Landing: correct language by browser locale; manual switch persists after reload; downloads point to the chosen language.
 3. Reading pages: no PDF/EPUB links; language switch goes to the other edition; subtitles and stars render.
-4. PDFs: one-page cover; three-level bookmarks; English body uses Newsreader, Chinese uses Noto.
+4. PDFs: one-page cover; three-level bookmarks; English body uses Newsreader, Chinese uses Noto. Chinese pages load the Fontsource CSS and only fetch chunks for visible text.
 5. EPUBs: all `.xhtml`, `.opf`, `.ncx` parse as XML; no raw `<br>`; no `<math>`; currency renders as text, not formulas.
 6. Privacy: `git grep -n "qliu23\|/Users/" docs` returns nothing.
 

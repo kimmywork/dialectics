@@ -554,6 +554,17 @@ def catalog_html(book: Book) -> str:
 # 网页
 # --------------------------------------------------------------------------- #
 
+def font_cdn_html(cfg: dict) -> str:
+    base = cfg.get("fonts", {}).get("chinese_cdn", "").rstrip("/")
+    if not base:
+        return ""
+    weights = [400]
+    if cfg.get("fonts", {}).get("web_bold"):
+        weights.append(700)
+    links = "\n".join(f'<link rel="stylesheet" href="{base}/{w}.css">' for w in weights)
+    return '<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>\n' + links
+
+
 def build_site(book: Book, cfg: dict, fonts: dict, asset_version: str = "") -> dict[str, str]:
     layout = (ROOT / "templates" / "layout.html").read_text(encoding="utf-8")
     meta = book.meta
@@ -575,11 +586,10 @@ def build_site(book: Book, cfg: dict, fonts: dict, asset_version: str = "") -> d
     if book.code == "en" and fonts.get("newsreader", {}).get((400, "normal")):
         font_preload = ('<link rel="preload" href="../assets/fonts/newsreader-400.woff2" '
                         'as="font" type="font/woff2" crossorigin>')
-    elif fonts.get("noto", {}).get(400):
-        font_preload = ('<link rel="preload" href="../assets/fonts/noto-serif-sc-400.woff2" '
-                        'as="font" type="font/woff2" crossorigin>')
+    font_cdn = font_cdn_html(cfg) if book.code == "zh" else ""
 
     def page(title: str, body: str, *, slug: str, desc: str = "", cls: str = "") -> str:
+        fname = "index.html" if slug == "index" else f"{slug}.html"
         return render(
             layout,
             lang=book.lang,
@@ -590,6 +600,7 @@ def build_site(book: Book, cfg: dict, fonts: dict, asset_version: str = "") -> d
             subtitle=esc(meta["subtitle"]),
             description=esc(desc or description),
             font_preload=font_preload,
+            font_cdn=font_cdn,
             nav=nav_html(book, slug),
             body=body,
             body_class=f"page-{cls}" if cls else "page-chapter",
@@ -674,6 +685,7 @@ def build_landing(books: list[Book], cfg: dict, fonts: dict, asset_version: str 
         template,
         assets="assets",
         asset_version=asset_version,
+        font_cdn=font_cdn_html(cfg),
         zh_block=blocks.get("zh", ""),
         en_block=blocks.get("en", ""),
         author=esc(cfg["editions"][cfg["site"]["default"]]["author"]),
@@ -819,9 +831,15 @@ def build_print(book: Book, cfg: dict, fonts: dict[int, Path]) -> Path:
     css = (css.replace("__BOOK_TITLE__", meta["title"])
               .replace("__BOOK_SUBTITLE__", meta["subtitle"]))
     if any(fonts.get(k) for k in ("noto", "newsreader")):
+        (BUILD / "fonts").mkdir(parents=True, exist_ok=True)
+        for name in ("newsreader-400.woff2", "newsreader-700.woff2",
+                     "newsreader-400-italic.woff2"):
+            src_font = ASSETS / "fonts" / name
+            if src_font.is_file():
+                shutil.copyfile(src_font, BUILD / "fonts" / name)
         css = css.replace(
             'url("../fonts/',
-            f'url("file://{(ASSETS / "fonts").resolve()}/',
+            f'url("file://{(BUILD / "fonts").resolve()}/',
         )
     else:
         css = re.sub(r"@font-face\s*\{[^}]*\}", "", css)
@@ -1052,7 +1070,7 @@ def prepare_fonts(cfg: dict, html_text: str) -> dict[int, Path]:
         return {}
     return ensure_fonts(
         set(html_text),
-        out_dir=ASSETS / "fonts",
+        out_dir=BUILD / "fonts",
         cache_dir=ROOT / ".cache" / "fonts",
         explicit=cfg["fonts"].get("source") or None,
     )
@@ -1147,13 +1165,14 @@ def main() -> int:
     )
 
     english_text = landing + "\n" + "\n".join(pages["en"].values())
+
     fonts: dict = {"noto": {}, "newsreader": {}}
     if not args.no_fonts:
         fonts["noto"] = prepare_fonts(cfg, site_text)
         fonts["newsreader"] = prepare_newsreader(cfg, english_text)
     else:
         for weight in (400, 700):
-            candidate = ASSETS / "fonts" / f"noto-serif-sc-{weight}.woff2"
+            candidate = BUILD / "fonts" / f"noto-serif-sc-{weight}.woff2"
             if candidate.is_file():
                 fonts["noto"][weight] = candidate
         for key, name in ((400, "normal"), (700, "normal"), (400, "italic")):

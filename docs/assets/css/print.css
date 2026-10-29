@@ -1,3 +1,17 @@
+@font-face {
+  font-family: "Noto Serif SC";
+  src: url("../fonts/noto-serif-sc-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Noto Serif SC";
+  src: url("../fonts/noto-serif-sc-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+}
+
 /* ------------------------------------------------------------------ *
  * 打印层：A4 书籍版式（封面 / 版权页 / 目录 / 部分扉页 / 正文）。
  * 由 Chromium 的 print-to-pdf 输出，@page 背景与页眉页脚均可用。
