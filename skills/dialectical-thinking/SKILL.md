@@ -1,15 +1,15 @@
 ---
 name: dialectical-thinking
-description: Dialectical thinking toolkit for analyzing and resolving complex
-  dilemmas, tensions, and paradoxes. Load when the user faces an either/or
-  dead-end, is squeezed by have-it-all demands, needs to break out of
-  black-and-white thinking, design both/and solutions, make major decisions
-  (career change, strategy, resource allocation, family conflict), or detect
-  pseudo-dialectics, muddy compromise talk, or bureaucratic rhetoric.
+description: Analyze and resolve complex dilemmas, tensions, and paradoxes;
+  break either/or dead-ends; design both/and solutions and make major decisions
+  (career change, strategy, resource allocation, family conflict). Use when the
+  user is squeezed by have-it-all demands, stuck in black-and-white thinking, or
+  needs to detect pseudo-dialectics, muddy compromise talk, or bureaucratic
+  rhetoric.
 ---
 # Dialectical Thinking: An Operating Manual for Complex Dilemmas and Tensions
 
-> Methodology distilled from Kimmy's *Beyond Either/Or: A Popular Handbook of Dialectical Thinking* (《走出二选一》, dialectics.kimleo.net).
+> Methodology distilled from Kimmy's *Beyond Either/Or: A Popular Handbook of Dialectical Thinking* (《走出二选一》, dialectics.kimleo.net). Companion to the `critical-thinking` skill.
 
 ## 0. Always triage first: pick the right tool before solving
 
@@ -17,7 +17,7 @@ For any conflict, first determine which domain it belongs to:
 
 | Domain | Typical scenarios | Primary tool | Forbidden move |
 | --- | --- | --- | --- |
-| Fact verification / causal attribution / contract compliance | Auditing, acceptance testing, accident attribution, scientific checks, breach determination | Formal logic + critical thinking + empirical verification | Never use "everything has two sides" or "blame both sides" to cover up factual errors or breach of duty |
+| Fact verification / causal attribution / contract compliance | Auditing, acceptance testing, accident attribution, scientific checks, breach determination | Formal logic + `critical-thinking` + empirical verification | Never use "everything has two sides" or "blame both sides" to cover up factual errors or breach of duty |
 | Multi-goal allocation under fixed resources | Budget splits, scheduling, savings vs. spending | §6 main contradiction + marginal-return calculation | Never spread effort thin or demand "X and Y and Z all at once" — a single P0 must be ranked |
 | Mutually dependent, long-lived tensions | Exploit vs. explore, centralize vs. empower, parenting (control vs. autonomy), closeness vs. independence | This skill, §1–§8 in full | Never pick one pole black-and-white or try to eliminate one pole once and for all |
 
@@ -73,7 +73,7 @@ Dead-loop signal: both sides argue rigorously and self-consistently, forever, wi
 **Key techniques**:
 - **Find the mediator M**: something carrying the opposite attributes both sides need — a raincoat for "playing in rain" and "staying dry"; escrow for "trust" and "risk."
 - **Constancy and expediency (Mencius — "reaching a hand to a drowning sister-in-law")**: attach an emergency-exemption valve with explicit trigger conditions to every rigid principle. Three anti-abuse conditions: ① purpose alignment (serves the institution's parent goal, not personal convenience); ② publicized trigger conditions; ③ post-hoc written record and review. Expediency everywhere makes rules putty; none at all makes you a cold doctrinaire.
-- **DBT communication switch**: replace "but" with "and / at the same time" — two opposite psychological facts can both be true in the same room. "You worked extremely hard, AND the conversion rate did miss target — let's look at how to turn that effort into results."
+- **Dialectical Behavior Therapy (DBT) communication switch**: replace "but" with "and / at the same time" — two opposite psychological facts can both be true in the same room. "You worked extremely hard, AND the conversion rate did miss target — let's look at how to turn that effort into results."
 - **Cost discipline**: any claim of "having both" must inject new resources, new processes, or remove old actions. "X and Y and Z" with no supporting mechanism is enforced-both-ways pseudo-dialectics (see §9).
 
 ## 5. Splitting and placing: timely mean and three-dimensional splitting
@@ -135,7 +135,7 @@ Whenever "look at it dialectically" is used to dodge responsibility, stall, or b
 
 1. **Ticking-clock crises and zero-tolerance ethics**: fire escape, acute rescue, domestic violence, crime, financial fraud → act first to stop the bleeding / call the police / isolate; never "dialectically compromise" with evil that crosses the line.
 2. **Malicious manipulation under extreme power asymmetry with no exit** (gaslighting, toxic organizations) → stop unilateral introspection and reframing (otherwise dialectics becomes an opiate that excuses the abuser); shift to hardening your evidence chain, cultivating your best alternative (BATNA), and exiting decisively.
-3. **Severe lack of basic facts and domain expertise** → dialectical thinking is an operating system that processes facts; it produces none itself. First master the basic data, industry base rates, and physical constraints via critical thinking and professional learning, then start the dialectical toolkit.
+3. **Severe lack of basic facts and domain expertise** → dialectical thinking is an operating system that processes facts; it produces none itself. First master the basic data, industry base rates, and physical constraints via `critical-thinking` and professional learning, then start the dialectical toolkit.
 
 ## 11. Seven-step process for major decisions (career change, relocation, home purchase, strategy)
 
@@ -160,6 +160,7 @@ When facing an unfamiliar complex topic (taking over a new department, analyzing
 
 ## Output conventions
 
+- Respond in the user's language; keep established English terms when they are clearer.
 - When analyzing a complex dilemma: first state the tension classification and domain triage, then proceed structurally through "diagnose → reframe → split → prioritize → pre-mortem," and end with an executable plan.
 - Every plan must carry three attachments: a resource-balancing account (who bears which cost), verification thresholds (leading indicators and warning lines), and a decision deadline with triggers.
 - Always rule out factual problems before riding tensions; never use dialectical talk to cover factual falsehoods.

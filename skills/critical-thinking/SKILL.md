@@ -1,23 +1,23 @@
 ---
 name: critical-thinking
-description: Critical thinking toolkit based on Asking the Right Questions
-  (Browne & Keeley). Load when the user needs to evaluate arguments and evidence
-  quality, dissect an opinion, article, report, or news item, spot fallacies and
-  misleading statistics, verify claims, review research or expert statements,
-  check biases, distinguish reliable from unreliable information, or do
-  evidence-oriented analysis.
+description: Evaluate arguments, evidence, statistics, and claims for reliability;
+  dissect opinions, articles, reports, and news items; spot fallacies and
+  misleading numbers. Use when the user needs to verify claims, review research
+  or expert statements, check biases, distinguish reliable from unreliable
+  information, or do evidence-oriented analysis. Based on Asking the Right
+  Questions (Browne & Keeley).
 ---
 # Critical Thinking: Ten Questions for Evaluating Arguments
 
-> Methodology based on Neil Browne & Stuart Keeley, *Asking the Right Questions*, designed as the companion skill to Dialectical Thinking (*Beyond Either/Or*).
+> Methodology based on Neil Browne & Stuart Keeley, *Asking the Right Questions*; companion to the `dialectical-thinking` skill for *Beyond Either/Or*.
 
 ## Positioning and mindset
 
 - **Sponge vs. panning for gold**: the sponge absorbs information effortlessly but can't rank what's worth believing; panning for gold interacts with the material — asking questions, comparing claims against evidence, deciding for yourself what merits belief. This skill is the panning method: read while asking "what justifies this?"
 - **Weak-sense vs. strong-sense critical thinking**: weak-sense critique defends views you already hold and destroys arguments you already dislike; strong-sense critique turns the same scrutiny on your own commitments. Someone who only does the former has learned rhetoric, not thinking.
 - **Practice with the right values**: autonomy (self-governed judgment), curiosity, humility (acknowledge mistakes), respect for good reasoning wherever found. Two opposing attitudes make the method worthless: emotional attachment to your current beliefs, and the belief that no one-sided answer exists so "anything goes."
-- **Domain of applicability**: this skill handles questions of fact, evidence, and argument with checkable truth values (the "ordered domain"). If the question on the table is a long-lived tension where both sides are right (exploit vs. explore, control vs. autonomy), switch to the Dialectical Thinking skill.
-- **The full closed loop**: critical thinking (input filter — remove falsehoods) → dialectical thinking (frame-level reframing of genuine tensions) → critical thinking (stress-test and pre-mortem the new solution). Only genuine conflicts that survive fact-checking deserve dialectical integration.
+- **Domain of applicability**: this skill handles questions of fact, evidence, and argument with checkable truth values (the "ordered domain"). If the question on the table is a long-lived tension where both sides are right (exploit vs. explore, control vs. autonomy), switch to the `dialectical-thinking` skill.
+- **The full closed loop**: this skill is the input filter; the `dialectical-thinking` skill reframes genuine tensions; this skill returns to stress-test and pre-mortem the result. Only conflicts that survive fact-checking deserve dialectical integration; the handoff is detailed below.
 
 ## The ten-question procedure
 
@@ -44,7 +44,7 @@ For any argument (article, report, speech, ad, news item, social media post, col
 
 ### 4. What are the value assumptions and descriptive assumptions?
 - **Value assumptions**: unstated value priorities that bridge the gap between reasons and prescriptive conclusions. An arguer who prefers individual responsibility over collective duty, or security over liberty, will select reasons accordingly. Identify the **value conflict** (e.g., individual convenience vs. community safety, tradition vs. innovation, free speech vs. harm prevention) and ask: which side does the author favor? Do I share that priority?
-- Value preferences are not arguments — but knowing them lets you judge whether the reasons actually justify the conclusion *for you*, and whether a clash is truly about reasons or merely about which side of a genuine tension someone stands on (if the latter, that's a job for the Dialectical Thinking skill).
+- Value preferences are not arguments — but knowing them lets you judge whether the reasons actually justify the conclusion *for you*, and whether a clash is truly about reasons or merely about which side of a genuine tension someone stands on (if the latter, that's a job for the `dialectical-thinking` skill).
 - **Descriptive assumptions**: unstated beliefs about how the world works (e.g., "users won't change behavior after the price rises," "what worked before will keep working," "people respond to incentives but not to appeals"). Test each: is it plausible? Does the argument collapse if it fails? Can I imagine a world where the reasons are true but the conclusion is false?
 - Practice both directions: when *making* your own argument, list your own value and descriptive assumptions before someone else exposes them.
 
@@ -110,20 +110,21 @@ Almost every argument is an act of selective presentation; advertisements and ad
 - Resist **dichotomous thinking**: the same reasons usually support a family of **conditional conclusions** ("if X holds, then …") rather than one unique verdict. Real-world issues are gray-shaded; reasons rarely point to a single mandatory conclusion.
 - Generate alternatives systematically: swap in a different assumption and derive the conclusion it supports; combine the conclusion with a qualifier (time, scope, condition) and check whether a more modest conclusion is the one the reasons can actually carry.
 - Conclusion strength must match reason strength: when the evidence is insufficient, "cannot yet be determined" is more accurate than a forced verdict — and more credible.
-- Ending at the destination: deciding what to believe is the payoff of the whole procedure. State your conclusion explicitly, flag its conditions, and say what new evidence would change your mind (this also feeds the Popper test in the Dialectical Thinking skill).
+- Ending at the destination: deciding what to believe is the payoff of the whole procedure. State your conclusion explicitly, flag its conditions, and say what new evidence would change your mind (this also feeds the Popper test in the `dialectical-thinking` skill).
 
 ## Applying the two skills together
 
 The ten questions are the input filter; they cannot dissolve a tension where both sides hold true claims. Run the loop:
 1. **Input**: critical thinking cleans the facts — fake data, fallacies, equivocation, and unquantified spin get removed before anything else.
-2. **Frame**: what remains are genuine, evidence-backed conflicts (real R&D constraints vs. real market windows; real elder-care needs vs. real first-floor losses in an elevator dispute). Switch to Dialectical Thinking for diagnosis (four tension types), reframing, splitting, prioritization, and third-option design.
+2. **Frame**: what remains are genuine, evidence-backed conflicts (real R&D constraints vs. real market windows; real elder-care needs vs. real first-floor losses in an elevator dispute). Switch to `dialectical-thinking` for diagnosis (four tension types), reframing, splitting, prioritization, and third-option design.
 3. **Output**: critical thinking returns — pre-mortem the new solution, check its hidden assumptions, cost accounting, falsification conditions, and omitted risks before committing.
 
 ## Output conventions
 
+- Respond in the user's language; keep established English terms when they are clearer.
 - When evaluating an argument: first restate its issue, conclusion, and reasons in one or two sentences (proving accurate understanding, avoiding a straw man), then present findings per the ten questions, ordered by severity (fatal flaws > evidential weaknesses > presentation issues).
 - Give an overall grade in three levels: **argument holds / holds with reservations / does not hold**, and name the decisive gap.
 - Be constructive: with every problem identified, attach "to repair this argument, the author would need to supply …"
 - Practice strong-sense critique: run the ten questions on your own conclusion too; write out the falsification condition for your key judgment (by what date, at what metric, would I admit I was wrong).
 - Mind the tone: ask questions rather than deliver verdicts ("what evidence supports this?" beats "that's wrong"); critique reasoning, never persons.
-- When a genuine conflict cannot be dissolved by fact-checking (two legitimate claims), say explicitly "this is where Dialectical Thinking should take over" — do not force a black-and-white verdict.
+- When a genuine conflict cannot be dissolved by fact-checking (two legitimate claims), say explicitly "this is where `dialectical-thinking` should take over" — do not force a black-and-white verdict.
