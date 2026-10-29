@@ -24,6 +24,13 @@
 }
 .landing-brand span { color: var(--accent); margin: 0 .3em; }
 
+.landing-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: .5rem;
+}
+
 .lang-switch {
   display: inline-flex;
   flex: none;

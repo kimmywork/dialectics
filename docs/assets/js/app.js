@@ -28,7 +28,7 @@
 
   function applyTheme(theme, persist) {
     if (theme === "auto") {
-      delete root.dataset.theme;
+      root.dataset.theme = "auto";
       if (persist) { try { localStorage.removeItem(THEME_KEY); } catch (e) {} }
     } else {
       root.dataset.theme = theme;
@@ -44,7 +44,7 @@
 
   if (media && media.addEventListener) {
     media.addEventListener("change", function () {
-      if (!root.dataset.theme) applyTheme("auto", false);
+      if (root.dataset.theme === "auto") applyTheme("auto", false);
     });
   }
   applyTheme(root.dataset.theme || "auto", false);
