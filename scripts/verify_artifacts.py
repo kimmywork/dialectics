@@ -116,14 +116,28 @@ def verify_epub(code: str, path: Path) -> None:
 
         nav_entries = 0
         outline_depth = 0
+        meta_depth = 0
+        unordered = 0
         try:
             ncx = ET.fromstring(archive.read("EPUB/toc.ncx"))
-            nav_entries = sum(1 for node in ncx.iter() if node.tag.endswith("navPoint"))
+            nav_points = [node for node in ncx.iter() if node.tag.endswith("navPoint")]
+            nav_entries = len(nav_points)
             outline_depth = nav_depth(ncx)
+            unordered = sum(1 for node in nav_points if not node.get("playOrder"))
+            meta_depth = next(
+                (
+                    int(meta.get("content", "0"))
+                    for meta in ncx.iter()
+                    if meta.tag.endswith("meta") and meta.get("name") == "dtb:depth"
+                ),
+                0,
+            )
         except (KeyError, ET.ParseError) as exc:
             errors.append(f"{code}: EPUB navigation is unreadable: {exc}")
         check(nav_entries > 100, f"{code}: EPUB TOC has only {nav_entries} entries")
         check(outline_depth >= 3, f"{code}: EPUB TOC is only {outline_depth} levels deep")
+        check(meta_depth == outline_depth, f"{code}: NCX dtb:depth={meta_depth}, actual depth={outline_depth}")
+        check(unordered == 0, f"{code}: {unordered} NCX navPoints lack playOrder")
 
         notes.append(
             f"{code.upper()} EPUB: {parsed} XML docs, "

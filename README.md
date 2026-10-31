@@ -109,7 +109,7 @@ LICENSE.md                许可协议全文
 - **pandoc** 负责 Markdown → HTML，网页与 PDF 的公式输出为 **MathML**。
 - **Chromium** 打印 PDF：`@page` 命名页 + 边距框实现封面底色、部分扉页不显示页码、正文页眉与页码。
 - **pypdf** 补写阅读器侧边栏书签（部分 → 章节 → 小节）；书页目录保持干净、不排页码。
-- **EPUB** 由 pandoc 输出，按**章**拆分 XHTML（与 Web 的章节页一致），目录与书签深入到三级小节（1.1、思维练习等）；微信读书等阅读器不渲染 MathML，公式在打包前转成 Unicode 文本。
+- **EPUB** 由 pandoc 输出，按**章**拆分 XHTML（与 Web 的章节页一致），目录与书签深入到三级小节（1.1、思维练习等）；微信读书等阅读器不渲染 MathML，公式在打包前转成 Unicode 文本。构建后还会修正 NCX 的 `dtb:depth` 与 `playOrder`，避免依赖 NCX 的阅读器把层级压平。
 - **落地页**是纯静态 HTML + 一小段 JS，语言选择立即生效并持久化，无需后端。
 - 站点无第三方 JS 依赖；中文字体走 jsDelivr CDN（Fontsource 分包），英文与 PDF 字体本地生成或内嵌。
 

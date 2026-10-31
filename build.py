@@ -24,6 +24,8 @@ import sys
 import tempfile
 import time
 import tomllib
+import zipfile
+from xml.etree import ElementTree as ET
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -1133,6 +1135,42 @@ def epub_markdown(source: Path, ui: dict, lang: str) -> tuple[str, set[str]]:
     return text, unknown
 
 
+def repair_epub_ncx(target: Path) -> tuple[int, int]:
+    """Fix Pandoc's NCX metadata for readers that prefer the EPUB2 fallback.
+
+    Pandoc 3.x writes ``dtb:depth=1`` and omits ``playOrder`` even when the
+    navPoints are nested. Readers that trust NCX then flatten or truncate the
+    hierarchy. Recompute the depth and number the navPoints in reading order.
+    """
+    ns = "http://www.daisy.org/z3986/2005/ncx/"
+    ET.register_namespace("", ns)
+    with zipfile.ZipFile(target) as archive:
+        root = ET.fromstring(archive.read("EPUB/toc.ncx"))
+        points = [node for node in root.iter() if node.tag == f"{{{ns}}}navPoint"]
+
+        def depth(node, level: int = 0) -> int:
+            if node.tag == f"{{{ns}}}navPoint":
+                level += 1
+            return max([level] + [depth(child, level) for child in node])
+
+        actual = depth(root)
+        for order, node in enumerate(points, 1):
+            node.set("playOrder", str(order))
+        for meta in root.iter(f"{{{ns}}}meta"):
+            if meta.get("name") == "dtb:depth":
+                meta.set("content", str(actual))
+
+        payload = ET.tostring(root, encoding="utf-8", xml_declaration=True)
+        tmp = target.with_name(target.stem + ".ncx.tmp")
+        with zipfile.ZipFile(tmp, "w") as out:
+            for item in archive.infolist():
+                data = payload if item.filename == "EPUB/toc.ncx" else archive.read(item.filename)
+                compress = zipfile.ZIP_STORED if item.filename == "mimetype" else item.compress_type
+                out.writestr(item, data, compress_type=compress)
+    tmp.replace(target)
+    return actual, len(points)
+
+
 def build_epub(book: Book, cfg: dict, pandoc: str, cover: Path | None, target: Path) -> None:
     meta = book.meta
     source = Path(meta["_path"])
@@ -1168,6 +1206,8 @@ def build_epub(book: Book, cfg: dict, pandoc: str, cover: Path | None, target: P
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0 or not target.is_file():
         die(f"EPUB 生成失败：{proc.stderr.strip()[:400]}")
+    depth, entries = repair_epub_ncx(target)
+    log(f"EPUB 导航：{entries} 条，{depth} 层")
 
 
 def build_pdf(print_html: Path, target: Path) -> None:

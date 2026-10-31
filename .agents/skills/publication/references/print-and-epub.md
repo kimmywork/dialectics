@@ -83,7 +83,8 @@ pandoc staging.md \
 
 3. Generate the cover with Chromium (1200x1800 or 1600x2400), using the same typographic system as the PDF cover.
 4. `--split-level=2` makes each chapter (H2) its own XHTML file; `--toc-depth=3` adds sections such as `1.1` and `思维练习` to the reader TOC. Do not split at H1 parts unless the book has no chapter level.
-5. Validate the archive.
+5. Pandoc may write `dtb:depth=1` and omit `playOrder` in `toc.ncx` even when the tree is deeper. Recompute the depth and number navPoints in reading order; otherwise NCX-based readers can flatten the hierarchy.
+6. Validate the archive.
 
 ## EPUB preprocessing
 
