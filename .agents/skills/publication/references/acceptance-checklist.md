@@ -47,6 +47,7 @@ Run from the repository root before committing. Mark each item with the command 
 - [ ] Every `.xhtml`, `.opf`, `.ncx` passes `xmllint --noout`.
 - [ ] No raw `<br>` and no `<math>` remains.
 - [ ] Currency renders as text, not formulas.
+- [ ] One XHTML file per chapter; the reader TOC reaches H3 sections such as `1.1` and exercises.
 - [ ] Cover, TOC, code, tables, and math display in at least two readers.
 - [ ] Fonts are embedded and render offline.
 - [ ] The file opens from a clean import (readers cache old copies).

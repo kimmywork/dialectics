@@ -55,7 +55,7 @@ Never hand-edit generated files. Change sources, assets, config, or templates, t
 - **Cover sizing.** The cover uses absolute `inset` inside a fixed-height page; `height: 100%` plus margins created a blank second page.
 - **PDF bookmarks need page numbers.** Chromium writes named destinations only for linked anchors. Parts/chapters resolve from those; sections (`h3`) use line-start text search in `scripts/pdf_toc.py`. Advance the cursor for named entries or the preface guide page matches first.
 - **Printed TOC has no page numbers**; navigation belongs to PDF bookmarks and the web sidebar.
-- **EPUB is XHTML.** Self-close void tags. Scope string replacements to headings; global replacements previously corrupted code spans.
+- **EPUB is XHTML and splits by chapter.** Use `--split-level=2` (H2 chapters, not H1 parts) and `--toc-depth=3` so reader navigation reaches sections such as `1.1` and `思维练习`. Self-close void tags. Scope string replacements to headings; global replacements previously corrupted code spans.
 - **Asset cache busting.** Page templates append `?v=<timestamp>` to CSS/JS. Without it, browsers keep old styles after a rebuild.
 - **AI prompt button.** The landing page copies a per-language book prompt linking to `/zh/dialectics.md` or `/en/dialectics.md`; every chapter page has the same button with a chapter prompt (book title, chapter title, absolute page URL). Both prompts ask for a structured analytical approach without prescribing a specific book method. The build copies the manuscripts there; keep URLs and prompt text in sync when editions or slugs change. Copy/status logic lives in `docs/assets/js/ai-copy.js` and is shared with the landing page.
 - **Sidebar scroll and resume keys are per edition** (`dialectics.nav.<code>`, `dialectics.resume.<code>`).
@@ -67,7 +67,7 @@ Before committing:
 1. `make check` and `make verify` complete. Use `make verify-full` before a release or after changing PDF/EPUB generation.
 2. Playwright covers: build artifacts and internal links; locale detection and persistence; manual language switch; light/dark/system theme; downloads only on the landing page; catalog, pager, keyboard navigation, language links, resume, sidebar scroll, progress and drawer animation; chapter AI prompt content; math, tables, subtitles; mobile overflow.
 3. Visual baselines live in `tests/__screenshots__/` and must be reviewed. Refresh with `npm run test:update`; commit changed baselines only when the visual diff is intended.
-4. Manual/long-form checks: PDFs have a one-page cover and three-level bookmarks; EPUBs open in at least two readers and render math/currency as text.
+4. Manual/long-form checks: PDFs have a one-page cover and three-level bookmarks; EPUBs split into one XHTML per chapter, expose three levels in the reader TOC, open in at least two readers, and render math/currency as text.
 5. Privacy: `git grep -n "qliu23\|/Users/" docs` returns nothing.
 
 Do not commit `test-results/`, `playwright-report/`, `node_modules/`, or `blob-report/`.

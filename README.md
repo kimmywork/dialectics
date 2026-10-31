@@ -109,7 +109,7 @@ LICENSE.md                许可协议全文
 - **pandoc** 负责 Markdown → HTML，网页与 PDF 的公式输出为 **MathML**。
 - **Chromium** 打印 PDF：`@page` 命名页 + 边距框实现封面底色、部分扉页不显示页码、正文页眉与页码。
 - **pypdf** 补写阅读器侧边栏书签（部分 → 章节 → 小节）；书页目录保持干净、不排页码。
-- **EPUB** 由 pandoc 输出；微信读书等阅读器不渲染 MathML，公式在打包前转成 Unicode 文本。
+- **EPUB** 由 pandoc 输出，按**章**拆分 XHTML（与 Web 的章节页一致），目录与书签深入到三级小节（1.1、思维练习等）；微信读书等阅读器不渲染 MathML，公式在打包前转成 Unicode 文本。
 - **落地页**是纯静态 HTML + 一小段 JS，语言选择立即生效并持久化，无需后端。
 - 站点无第三方 JS 依赖；中文字体走 jsDelivr CDN（Fontsource 分包），英文与 PDF 字体本地生成或内嵌。
 
@@ -136,7 +136,7 @@ npm run test:update # 更新视觉回归基线（检查 diff 后再提交）
 - `tests/landing.spec.js`：浏览器语言检测与持久化、手动切换、亮 / 暗 / 跟随系统、下载、AI 提示词复制、横向溢出。
 - `tests/reading.spec.js`：目录跳转、翻页、键盘翻页、语言互跳、续读、侧栏滚动保持、进度条、抽屉动画、章节 AI、数学 / 表格 / 副标题。
 - `tests/visual.spec.js`：落地页中 / 英 / 移动端与章节亮 / 暗 / 移动端的截图基线。
-- `scripts/verify_artifacts.py`：PDF 页数与三层书签、EPUB 的 mimetype / XML / 无 MathML / 自闭合 `<br>`、Markdown 副本与源稿一致。
+- `scripts/verify_artifacts.py`：PDF 页数与三层书签、EPUB 按章分文件与三级目录、mimetype / XML / 无 MathML / 自闭合 `<br>`、Markdown 副本与源稿一致。
 
 视觉基线在 `tests/__screenshots__/`，属于源文件，需要提交。首次建立或设计变更后运行 `npm run test:update`，确认截图 diff 符合预期再提交。截图对字体渲染与平台敏感，换机器后如出现小差异，先更新基线并检查是否为预期变化。`playwright-report/` 与 `test-results/` 不提交。
 

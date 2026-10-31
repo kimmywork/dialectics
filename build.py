@@ -1147,7 +1147,7 @@ def build_epub(book: Book, cfg: dict, pandoc: str, cover: Path | None, target: P
         pandoc,
         "--from=markdown+smart+lists_without_preceding_blankline",
         "--to=epub3",
-        "--toc", "--toc-depth=2", "--split-level=1",
+        "--toc", "--toc-depth=3", "--split-level=2",
         "--metadata", f"title={meta['full_title']}",
         "--metadata", f"author={meta['author']}",
         "--metadata", f"lang={meta['language']}",

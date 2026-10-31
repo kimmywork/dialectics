@@ -71,7 +71,7 @@ Named destinations are cheap and reliable. Text search is the fallback; normaliz
 ```bash
 pandoc staging.md \
   --from=markdown+smart+lists_without_preceding_blankline \
-  --to=epub3 --toc --toc-depth=2 --split-level=1 \
+  --to=epub3 --toc --toc-depth=3 --split-level=2 \
   --metadata title="..." --metadata author="..." --metadata lang="..." \
   --metadata description="..." --metadata rights="..." --metadata date="YYYY-MM" \
   --metadata source="https://.../<code>/" \
@@ -82,7 +82,8 @@ pandoc staging.md \
 ```
 
 3. Generate the cover with Chromium (1200x1800 or 1600x2400), using the same typographic system as the PDF cover.
-4. Validate the archive.
+4. `--split-level=2` makes each chapter (H2) its own XHTML file; `--toc-depth=3` adds sections such as `1.1` and `思维练习` to the reader TOC. Do not split at H1 parts unless the book has no chapter level.
+5. Validate the archive.
 
 ## EPUB preprocessing
 

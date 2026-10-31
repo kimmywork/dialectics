@@ -41,6 +41,13 @@ def count_outline(items: list) -> int:
     return total
 
 
+def nav_depth(element, depth: int = 0) -> int:
+    """Maximum navPoint nesting depth in an EPUB NCX tree."""
+    if element.tag.endswith("navPoint"):
+        depth += 1
+    return max([depth] + [nav_depth(child, depth) for child in element])
+
+
 def verify_pdf(code: str, path: Path) -> None:
     check(path.is_file(), f"{code}: missing {path.relative_to(ROOT)}")
     if not path.is_file():
@@ -97,7 +104,31 @@ def verify_epub(code: str, path: Path) -> None:
             check(not re.search(r"<br\s*>", data), f"{code}: {name} contains an unclosed <br>")
 
         check(parsed > 10, f"{code}: EPUB has too few XML documents")
-        notes.append(f"{code.upper()} EPUB: {parsed} XML documents")
+
+        chapter_files = [
+            name for name in names
+            if name.startswith("EPUB/text/ch") and name.endswith(".xhtml")
+        ]
+        check(
+            len(chapter_files) > 25,
+            f"{code}: EPUB is split by part, not by chapter ({len(chapter_files)} chapter files)",
+        )
+
+        nav_entries = 0
+        outline_depth = 0
+        try:
+            ncx = ET.fromstring(archive.read("EPUB/toc.ncx"))
+            nav_entries = sum(1 for node in ncx.iter() if node.tag.endswith("navPoint"))
+            outline_depth = nav_depth(ncx)
+        except (KeyError, ET.ParseError) as exc:
+            errors.append(f"{code}: EPUB navigation is unreadable: {exc}")
+        check(nav_entries > 100, f"{code}: EPUB TOC has only {nav_entries} entries")
+        check(outline_depth >= 3, f"{code}: EPUB TOC is only {outline_depth} levels deep")
+
+        notes.append(
+            f"{code.upper()} EPUB: {parsed} XML docs, "
+            f"{len(chapter_files)} chapter files, {nav_entries} TOC entries (depth {outline_depth})"
+        )
 
 
 def verify_markdown(code: str, source: Path) -> None:

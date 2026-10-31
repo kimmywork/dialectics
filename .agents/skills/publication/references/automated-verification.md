@@ -37,7 +37,7 @@ Use a browser suite for the reading experience and a small artifact verifier for
 `scripts/verify_artifacts.py` should fail loudly when:
 
 - a PDF is under 1 MB, has fewer than 50 pages, fewer than 100 outline entries, no title metadata, or does not open the outline panel;
-- an EPUB is under 100 KB, lacks a first-entry `mimetype`, has no cover, has no embedded fonts, contains invalid XML, still contains `<math`, or contains an unclosed `<br>`;
+- an EPUB is under 100 KB, lacks a first-entry `mimetype`, has no cover, has no embedded fonts, contains invalid XML, still contains `<math`, contains an unclosed `<br>`, has too few chapter XHTML files, or its TOC is shallower than three levels;
 - `docs/<code>/dialectics.md` differs from the manuscript;
 - `docs/` contains `/Users/` or a username.
 
