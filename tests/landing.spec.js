@@ -1,4 +1,4 @@
-const { test, expect } = require("@playwright/test");
+const { test, expect, newContext } = require("./support/fixtures");
 const {
   gotoAndSettle,
   expectNoHorizontalOverflow,
@@ -12,7 +12,7 @@ test.describe("language selection", () => {
       ["zh-CN", "zh", "en"],
       ["en-US", "en", "zh"],
     ]) {
-      const context = await browser.newContext({ locale, viewport: { width: 1280, height: 900 } });
+      const context = await newContext(browser, { locale, viewport: { width: 1280, height: 900 } });
       const page = await context.newPage();
       await gotoAndSettle(page, "/");
 
@@ -73,7 +73,7 @@ test.describe("downloads", () => {
 
 test.describe("theme", () => {
   test("manual toggle changes colors and persists", async ({ browser }) => {
-    const context = await browser.newContext({ colorScheme: "light", locale: "zh-CN" });
+    const context = await newContext(browser, { colorScheme: "light", locale: "zh-CN" });
     const page = await context.newPage();
     await gotoAndSettle(page, "/");
 
@@ -92,7 +92,7 @@ test.describe("theme", () => {
   });
 
   test("auto follows the system preference", async ({ browser }) => {
-    const context = await browser.newContext({ colorScheme: "dark", locale: "zh-CN" });
+    const context = await newContext(browser, { colorScheme: "dark", locale: "zh-CN" });
     const page = await context.newPage();
     await gotoAndSettle(page, "/");
 
@@ -128,7 +128,7 @@ test.describe("AI prompts", () => {
   });
 
   test("English prompt ignores the old reading-method wording", async ({ browser }) => {
-    const context = await browser.newContext({
+    const context = await newContext(browser, {
       locale: "en-US",
       permissions: ["clipboard-read", "clipboard-write"],
       viewport: { width: 1280, height: 900 },
@@ -151,7 +151,7 @@ test.describe("AI prompts", () => {
 
     const ogImage = await page.locator('meta[property="og:image"]').getAttribute("content");
     expect(ogImage).toBe("https://dialectics.kimleo.net/assets/share/index.png");
-    expect((await context.request.get(ogImage)).status()).toBe(200);
+    expect((await context.request.get("/assets/share/index.png")).status()).toBe(200);
 
     await context.close();
   });

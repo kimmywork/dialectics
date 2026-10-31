@@ -1,4 +1,4 @@
-const { test, expect } = require("@playwright/test");
+const { test, expect, newContext } = require("./support/fixtures");
 const {
   gotoAndSettle,
   expectNoHorizontalOverflow,
@@ -100,7 +100,7 @@ test.describe("reading theme", () => {
   });
 
   test("auto follows the system preference", async ({ browser }) => {
-    const context = await browser.newContext({ colorScheme: "dark" });
+    const context = await newContext(browser, { colorScheme: "dark" });
     const page = await context.newPage();
     await gotoAndSettle(page, "/zh/ch01.html");
 
@@ -145,7 +145,7 @@ test.describe("progress and animation", () => {
 
 test.describe("chapter presentation", () => {
   test("subtitle, star, math and tables render", async ({ page }) => {
-    await gotoAndSettle(page, "/zh/ch01.html");
+    await gotoAndSettle(page, "/zh/ch09.html");
     await expect(page.locator(".chapter-sub")).toBeVisible();
     await expect(page.locator(".chapter-head .star")).toHaveCount(1);
     await expect(page.locator("math").first()).toBeVisible();
