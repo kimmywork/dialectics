@@ -17,7 +17,7 @@ SYMBOLS = {
     "cdot": "·", "times": "×", "div": "÷", "pm": "±", "mp": "∓",
     "dots": "…", "ldots": "…", "cdots": "⋯",
     "approx": "≈", "ge": "≥", "geq": "≥", "le": "≤", "leq": "≤",
-    "neq": "≠", "equiv": "≡", "circ": "∘",
+    "neq": "≠", "equiv": "≡", "circ": "∘", "propto": "∝", "vdash": "⊢",
     "langle": "⟨", "rangle": "⟩", "prod": "∏", "sum": "∑",
     "infty": "∞", "in": "∈", "notin": "∉", "subset": "⊂",
     "therefore": "∴", "because": "∵", "emptyset": "∅",
@@ -102,6 +102,9 @@ def convert(tex: str, report: set[str] | None = None) -> str:
             if name == "vec":
                 arg, i = _read_arg(tex, i)
                 out.append(arg + "\u20d7")
+            elif name == "bar":
+                arg, i = _read_arg(tex, i)
+                out.append(arg + "\u0305")
             elif name == "frac":
                 a, i = _read_arg(tex, i)
                 b, i = _read_arg(tex, i)
